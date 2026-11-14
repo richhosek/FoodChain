@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f5f7f2" />
+    <title>Food Chain</title>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand"><span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></span><h1>Food Chain</h1></div>
+        <button id="reset" class="reset-button" type="button" aria-label="Reset" disabled><span aria-hidden="true">&#8635;</span> Reset</button>
+      </header>
+      <section class="game-layout" aria-label="Food Chain game">
+        <div class="board-column">
+          <div class="board-heading"><div><span class="eyebrow">SINGLE LEVEL</span><h2>The food chain</h2></div><span class="board-size">8 &times; 8</span></div>
+          <div id="board" class="board" aria-label="Game board"></div>
+          <div class="board-footer"><span><span class="status-dot"></span><span id="status" role="status" aria-live="polite">Preparing the board...</span></span><span class="board-footer-label">LEVEL 01</span></div>
+        </div>
+        <aside class="sidebar" aria-label="Level progress">
+          <div class="sidebar-heading"><span class="eyebrow">YOUR PROGRESS</span><h2>Level 01</h2></div>
+          <div class="goal-block"><div class="goal-title"><span>Goal</span><span class="goal-badge">LEVEL 0</span></div><p>Remove creatures</p><div class="goal-count"><strong data-testid="removed">0</strong><span> / </span><span data-testid="target">10</span></div><div class="progress-track" role="progressbar" aria-label="Creatures removed" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0"><div id="progress-fill"></div></div></div>
+          <div class="stats"><div class="stat"><span>Turns</span><strong data-testid="turns">0</strong></div><div class="stat"><span>Free moves</span><strong data-testid="free-moves">3</strong></div></div>
+          <div class="legend"><span class="eyebrow">THE FOOD CHAIN</span><div class="legend-levels" aria-label="Creature levels from 0 to 4"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span></div><div class="legend-caption"><span>LOWER</span><span>HIGHER</span></div></div>
+        </aside>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

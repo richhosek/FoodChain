@@ -1,10 +1,11 @@
 <!--
 Sync Impact Report
-Version change: unversioned scaffold -> 1.0.0 (initial adoption)
-Modified principles: scaffold placeholders -> five project principles listed below
-Added sections: Platform and Technology Constraints; Development Workflow; Governance
+Version change: 1.0.0 -> 2.0.0 (backward-incompatible language requirement)
+Modified principles: II. Mobile-First, Cross-Input Play; III. Evaluate the Engine Against Game Needs
+Modified sections: Platform and Technology Constraints
+Added sections: none
 Removed sections: none
-Follow-up TODOs: none
+Follow-up TODOs: reconcile existing JavaScript-based feature specifications and plans with TypeScript.
 -->
 
 # Food Chain Constitution
@@ -20,16 +21,17 @@ decisions rather than silently treated as established rules. This keeps evolving
 
 ### II. Mobile-First, Cross-Input Play
 
-The initial playable version MUST run in a JavaScript web browser and support both mouse input on
-desktop and touch input on mobile. Gameplay and controls MUST remain usable at mobile and desktop
-screen sizes, and equivalent actions MUST be available through both input methods. Input behavior and
+The initial playable version MUST be written in TypeScript, compile to JavaScript for web browsers,
+and support both mouse input on desktop and touch input on mobile. Gameplay and controls MUST remain
+usable at mobile and desktop screen sizes, and equivalent actions MUST be available through both input
+methods. Input behavior and
 responsive layouts MUST be validated on both form factors.
 
 ### III. Evaluate the Engine Against Game Needs
 
 The game engine MUST remain undecided until mechanics have been explored and candidate engines have
-been compared. The comparison MUST cover JavaScript browser support, square and hexagonal grids,
-mouse and touch input, creature sprite states and animations, and transitions between screens. The
+been compared. The comparison MUST cover TypeScript compatibility and browser support, square and
+hexagonal grids, mouse and touch input, creature sprite states and animations, and transitions between screens. The
 chosen engine and its tradeoffs MUST be recorded before engine-dependent implementation begins.
 
 ### IV. Prototype Mechanics Before Art
@@ -48,7 +50,8 @@ reliable to investigate.
 
 ## Platform and Technology Constraints
 
-- The first target is a browser-based JavaScript game, with mobile play as a primary goal.
+- The first target MUST be a browser-based game written in TypeScript, with mobile play as a primary
+	goal. Its TypeScript MUST compile to JavaScript for execution in web browsers.
 - Square and hexagonal grids are both candidates for exploration; neither is selected by this
 	constitution. Their movement and replenishment rules MUST be specified and tested separately.
 - Engine selection MUST account for animated creature states, movement, and screen transitions as
@@ -80,4 +83,4 @@ or other non-semantic refinements. The amendment date MUST be updated when the c
 Each specification, plan, and implementation review MUST check applicable principles, record any
 conflicts, and resolve them or obtain a documented project owner-approved amendment before proceeding.
 
-**Version**: 1.0.0 | **Ratified**: 2026-11-14 | **Last Amended**: 2026-11-14
+**Version**: 2.0.0 | **Ratified**: 2026-11-14 | **Last Amended**: 2026-11-14
