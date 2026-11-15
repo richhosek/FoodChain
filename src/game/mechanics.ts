@@ -17,10 +17,29 @@ export function resolveWave(board: Board, candidates: readonly Position[], creat
     });
   }
   if (!reactions.length) return null;
-  const apex = reactions.some(reaction => reaction.prey.creature.level === 3);
+  const isApexReaction = (reaction: Reaction): boolean => {
+    if (reaction.predators.length < 4 || reaction.predators.some(predator => predator.creature.level !== 4)) return false;
+    const predatorPositions = new Set(reaction.predators.map(predator => `${predator.position.row},${predator.position.col}`));
+    const formations = [
+      [
+        { row: reaction.prey.position.row - 1, col: reaction.prey.position.col },
+        { row: reaction.prey.position.row, col: reaction.prey.position.col + 1 },
+        { row: reaction.prey.position.row + 1, col: reaction.prey.position.col },
+        { row: reaction.prey.position.row, col: reaction.prey.position.col - 1 },
+      ],
+      [
+        { row: reaction.prey.position.row - 1, col: reaction.prey.position.col - 1 },
+        { row: reaction.prey.position.row - 1, col: reaction.prey.position.col + 1 },
+        { row: reaction.prey.position.row + 1, col: reaction.prey.position.col - 1 },
+        { row: reaction.prey.position.row + 1, col: reaction.prey.position.col + 1 },
+      ],
+    ];
+    return formations.some(formation => formation.every(position => predatorPositions.has(`${position.row},${position.col}`)));
+  };
+  const apex = reactions.some(isApexReaction);
   const creations: LocatedCreature[] = apex ? [] : reactions.map(reaction => ({
     position: { ...reaction.prey.position },
-    creature: createCreature((reaction.prey.creature.level + 2) as Level),
+    creature: createCreature(Math.min(reaction.prey.creature.level + (reaction.predators.length === 3 ? 1 : 2), 4) as Level),
   }));
   const protectedCells = new Set(creations.map(creation => `${creation.position.row},${creation.position.col}`));
   const removed = new Map<string, LocatedCreature>();

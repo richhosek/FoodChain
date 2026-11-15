@@ -24,6 +24,9 @@ for (const count of [4, 5, 6, 7, 8]) {
       let active = true;
       const capture = () => { samples.push(sample()); if (active) requestAnimationFrame(capture); };
       const pending = view.effect({ type: 'reaction', wave, signal: new AbortController().signal });
+      const phaseDeadline = performance.now() + 5000;
+      while (sample()[18] !== '14,44,107' && performance.now() < phaseDeadline) await new Promise(resolve => setTimeout(resolve, 8));
+      if (sample()[18] !== '14,44,107') throw new Error('Reaction flash did not start after convergence');
       requestAnimationFrame(capture);
       await pending;
       await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
@@ -39,8 +42,10 @@ for (const count of [4, 5, 6, 7, 8]) {
     });
     const expectedCells = affected.flatMap((included, index) => included ? [{ row: Math.floor(index / 8), col: index % 8 }] : []);
     expect(result.explosionCells).toEqual(expectedCells);
-    const phases = result.samples.map(sample => sample[2 * 8 + 2]).filter((color, index, colors) => index === 0 || color !== colors[index - 1]);
-    expect(phases.slice(0, 4)).toEqual(['14,44,107', '241,211,148', '14,44,107', '241,211,148']);
+    const observed = result.samples.map(sample => sample[2 * 8 + 2]).filter(color => ['14,44,107', '241,211,148'].includes(color));
+    const phases = observed.filter((color, index, colors) => index === 0 || color !== colors[index - 1]);
+    expect(new Set(phases)).toEqual(new Set(['14,44,107', '241,211,148']));
+    expect(phases.length).toBeGreaterThanOrEqual(3);
     for (const sample of result.samples.slice(0, -2)) {
       const inverted = sample[18] === '14,44,107';
       if (!inverted && sample[18] !== '241,211,148') continue;

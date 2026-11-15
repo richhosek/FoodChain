@@ -11,3 +11,21 @@ export function boardWith(entries: Array<[number, number, Level]> = [], fill: Le
 }
 
 export const pos = (row: number, col: number): Position => ({ row, col });
+
+export function boardWithReaction(
+  preyPosition: Position,
+  predatorPositions: readonly Position[],
+  predatorLevel: Level,
+  fillLevel: Level = 0,
+): Board {
+  if (predatorLevel === 0) throw new RangeError('Predators must be above the prey level');
+  const board = boardWith([], fillLevel);
+  board[preyPosition.row][preyPosition.col] = {
+    id: 'prey',
+    level: (predatorLevel - 1) as Level,
+  };
+  predatorPositions.forEach((position, index) => {
+    board[position.row][position.col] = { id: `predator-${index}`, level: predatorLevel };
+  });
+  return board;
+}

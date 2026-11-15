@@ -52,11 +52,11 @@ test('waves handle predator thresholds, blasts, apex, and overlapping creations'
     if (count === 2) { assert.equal(wave, null); continue; }
     assert.ok(wave);
     assert.equal(wave.reactions[0].predators.length, count);
-    assert.equal(wave.after[3][3]?.level, 2);
+    assert.equal(wave.after[3][3]?.level, count === 3 ? 1 : 2);
     assert.equal(wave.removed.length, count === 3 ? 4 : count === 4 ? 9 : count === 5 ? 25 : 64);
     assert.equal(wave.explosionCells.length, count === 3 ? 0 : count === 4 ? 8 : count === 5 ? 24 : 63);
   }
-  const apex = boardWith(surrounding.slice(0, 3).map(([row, col]) => [row, col, 4]), 3);
+  const apex = boardWith([[2, 3, 4], [3, 4, 4], [4, 3, 4], [3, 2, 4]], 3);
   const apexWave = resolveWave(apex, [pos(3, 3)], makeCreature);
   assert.ok(apexWave?.apex);
   assert.equal(apexWave.removed.length, 64);
@@ -68,7 +68,7 @@ test('waves handle predator thresholds, blasts, apex, and overlapping creations'
   assert.equal(combined.reactions.length, 2);
   assert.equal(combined.creations.length, 2);
   assert.equal(combined.after[3][3]?.level, 2);
-  assert.equal(combined.after[3][5]?.level, 2);
+  assert.equal(combined.after[3][5]?.level, 1);
   assert.equal(new Set(combined.removed.map(item => item.creature.id)).size, combined.removed.length);
 });
 
@@ -140,6 +140,13 @@ test('non-reacting turns spend free moves and lose when none remain', async () =
   const finished = level.state;
   assert.equal(await level.move(pos(0, 0), pos(0, 1)), false);
   assert.deepEqual(level.state, finished);
+});
+
+test('non-reacting swaps do not emit reaction effects', async () => {
+  const level = new GameLevel(boardWith(), { random: () => 0 });
+  const events: string[] = [];
+  assert.equal(await level.move(pos(0, 0), pos(0, 1), event => { events.push(event.type); }), true);
+  assert.deepEqual(events, []);
 });
 
 test('zero free moves reject non-reacting swaps but permit reacting swaps and prioritize winning', async () => {
@@ -272,8 +279,8 @@ test('aborted reset during a paused move restores the pre-move snapshot', async 
 });
 
 test('apex overrides other simultaneous creations and counts each creature once', () => {
-  const board = boardWith([[0, 0, 3], [0, 1, 4], [1, 0, 4], [1, 1, 4], [5, 5, 1], [5, 6, 1], [6, 5, 1]]);
-  const wave = resolveWave(board, [pos(0, 0), pos(6, 6)], makeCreature);
+  const board = boardWith([[3, 3, 3], [2, 3, 4], [3, 4, 4], [4, 3, 4], [3, 2, 4], [5, 5, 1], [5, 6, 1], [6, 5, 1]]);
+  const wave = resolveWave(board, [pos(3, 3), pos(6, 6)], makeCreature);
   assert.ok(wave?.apex);
   assert.equal(wave.reactions.length, 2);
   assert.equal(wave.creations.length, 0);

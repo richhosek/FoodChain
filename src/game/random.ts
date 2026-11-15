@@ -28,3 +28,13 @@ export function sampleLevel(random: RandomSource): Level {
   if (value < 0.94) return 3;
   return 4;
 }
+
+export function sampleRefillLevel(random: RandomSource): Level {
+  const value = random();
+  if (!Number.isFinite(value) || value < 0 || value >= 1) throw new RangeError('Random values must be in [0, 1)');
+  if (value < 5 / 15) return 0;
+  if (value < 9 / 15) return 1;
+  if (value < 12 / 15) return 2;
+  if (value < 14 / 15) return 3;
+  return 4;
+}

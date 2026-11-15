@@ -1,5 +1,5 @@
 import type { Board, CreatureFactory, Position, RandomSource, RefillResult } from './creature.ts';
-import { sampleLevel } from './random.ts';
+import { sampleLevel, sampleRefillLevel } from './random.ts';
 
 export const BOARD_SIZE = 8;
 export interface GenerationOptions { signal?: AbortSignal; batchSize?: number; yieldControl?: () => Promise<void> }
@@ -106,7 +106,7 @@ export function refillBoard(board: Board, random: RandomSource, createCreature: 
       destination--;
     }
     for (let row = 0; row <= destination; row++) {
-      const creature = createCreature(sampleLevel(random));
+      const creature = createCreature(sampleRefillLevel(random));
       result[row][col] = creature;
       const to = { row, col };
       movements.push({ creature: { ...creature }, from: null, to });
