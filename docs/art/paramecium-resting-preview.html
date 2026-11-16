@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paramecium | Resting Animation</title>
+  <style>
+    :root { color-scheme: light; font-family: Georgia, serif; color: #203d35; background: #eaf3ef; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; background: radial-gradient(ellipse at 50% 45%, #f8fcf8 0%, #e1efea 72%, #d2e6df 100%); }
+    header, footer { width: min(100% - 3rem, 1100px); margin-inline: auto; }
+    header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding-block: 1.5rem; border-bottom: 1px solid #b8d2c8; }
+    h1 { margin: 0; font-size: 1.3rem; font-weight: normal; }
+    .label { font-family: 'Trebuchet MS', sans-serif; font-size: .68rem; font-weight: bold; text-transform: uppercase; color: #52786c; }
+    main { min-height: 0; display: grid; place-items: center; overflow: hidden; }
+    .stage { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); place-items: center; width: min(92vw, 112vh, 960px); }
+    .creature { display: block; width: 100%; height: auto; transform-origin: center; pointer-events: none; overflow: visible; }
+    footer { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding-block: 1.2rem; border-top: 1px solid #b8d2c8; font-family: 'Trebuchet MS', sans-serif; font-size: .8rem; }
+    button { border: 1px solid #789e8f; border-radius: 4px; background: #fff; color: #203d35; font: inherit; padding: .65rem 1rem; cursor: pointer; }
+    button:hover { background: #dceee5; }
+    button:focus-visible { outline: 3px solid #d88d58; outline-offset: 3px; }
+    #error { color: #8d3c31; }
+    @media (max-width: 480px) { header, footer { width: calc(100% - 2rem); } .stage { width: min(92vw, 110vh); } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Paramecium</h1>
+    <span class="label">Resting study</span>
+  </header>
+  <main>
+    <div class="stage">
+      <svg class="creature" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 768 768" role="img" aria-label="Animated paramecium">
+        <g id="cilia" fill="none" stroke="#172b29" stroke-width="10" stroke-linecap="round">
+          <path d="M474 37 L474 13 M503.4 41.7 L510.9 17.8 M530.6 54.2 L544 31.9 M555 72 L571.4 53.1 M576.5 93.4 L593.8 78.2 M594.9 117.4 L616.9 103.6 M608.1 144.5 L630.7 136.3 M615.3 173.7 L639.1 170.3 M617 203.9 L642 204.4 M615.1 234.3 L641 237.2 M610 264.3 L634.4 270 M600.8 293.1 L622.1 301.9 M586.7 319.6 L608.2 334.2 M566.6 341.7 L582.1 360 M541.9 359.3 L554.7 379.6 M515.7 375.4 L529 396.6 M489.9 392.6 L505.2 413.6 M466.5 413.5 L485.5 429.8 M450.3 440.7 L471.8 448.9 M440.7 470.2 L465.7 477.4 M432.9 500.1 L456.3 505.7 M426.1 530.2 L449.6 535.3 M419.8 560.3 L444.3 565.5 M412.9 590.2 L438 596.8 M403.9 619.3 L427.4 627.8 M391.6 647 L411.8 658 M374.4 671.6 L393.9 688.7 M352.1 691.7 L366.2 711.2 M326.1 707 L336.4 728.7 M297.8 717.8 L304.9 741.7 M268.2 724.9 L273.3 750.4 M238.1 729.5 L240.5 754.4 M207.8 730.2 L206.5 753.2 M178.1 725.5 L171.2 750.5 M150 714.8 L138.8 736 M126.1 697.2 L108.9 713.9 M109.7 672.7 L86.7 682.5 M102.4 643.8 L76.5 646.5 M103.1 613.9 L78.4 610.3 M110.3 584.6 L88.5 577.2 M121.8 556.4 L98.2 545.4 M135.7 529.2 L114.7 517.5 M151.2 502.8 L130.8 490.3 M167.4 476.6 L146 463.6 M182.8 449.8 L159.9 437.6 M196 421.6 L172.7 412.6 M204.9 391.7 L182.5 386.6 M210.5 361.2 L184.8 357.4 M214.7 330.7 L190.9 327.5 M219.1 300.3 L195.4 296.6 M224.2 270.1 L199.6 265.5 M230.7 240.2 L205.6 233.7 M240 211.3 L216.8 202.1 M253.2 184 L233.3 172.5 M270.3 159 L249.9 142.9 M290.5 136.2 L273.4 119.3 M312.8 115.5 L297.5 97.1 M336.9 96.6 L322.1 76.5 M362.1 79.3 L348 57.4 M388.3 63.6 L376.2 41.7 M415.5 49.9 L406.4 28.8 M444.2 40.4 L438.4 15"/>
+        </g>
+        <g id="body">
+          <path d="M474 34 C514 34 552 60 581 94 C611 128 621 164 620 205 C619 253 609 293 588 323 C569 350 540 363 511 382 C481 401 463 416 453 442 C441 475 434 508 426 545 C417 591 406 637 382 667 C359 697 324 715 286 724 C249 733 211 738 176 728 C139 718 115 697 105 669 C95 641 98 612 107 585 C116 558 131 530 147 504 C164 476 181 451 193 421 C207 385 209 344 216 301 C222 263 228 227 244 195 C259 164 283 137 310 114 C340 89 370 69 402 53 C429 39 453 34 474 34 Z" fill="#9bd5c5" stroke="#172b29" stroke-width="12" stroke-linejoin="round"/>
+          <path d="M292 172 C328 130 371 100 407 85" fill="none" stroke="#c6ebe1" stroke-width="12" stroke-linecap="round" opacity="0.7"/>
+        </g>
+        <g id="internal-details" stroke="#172b29" stroke-width="9" stroke-linejoin="round">
+          <circle cx="307" cy="329" r="19" fill="#d5f1e8"/>
+          <circle cx="354" cy="320" r="9" fill="#d5f1e8"/>
+          <path d="M330 476 C353 478 371 495 369 516 C368 529 358 535 344 540 C331 545 318 556 305 573 C292 590 282 608 266 618 C252 627 238 621 234 609 C228 594 236 580 249 568 C263 554 279 548 289 533 C299 518 294 499 303 488 C309 480 319 476 330 476 Z" fill="#69b5a4"/>
+        </g>
+        <g id="eye" stroke="#172b29" stroke-width="12">
+          <defs><clipPath id="eye-clip"><circle cx="451" cy="202" r="65"/></clipPath></defs>
+          <circle id="eye-white" cx="451" cy="202" r="65" fill="#fffdf8" stroke="none"/>
+          <circle id="pupil" cx="451" cy="202" r="18" fill="#172b29" stroke="none"/>
+          <g id="eyelids" clip-path="url(#eye-clip)">
+            <g id="upper-lid"><rect x="380" y="72" width="142" height="65" fill="#9bd5c5" stroke="none"/><path d="M380 137 H522" fill="none" stroke-width="12"/></g>
+            <g id="lower-lid"><rect x="380" y="267" width="142" height="65" fill="#9bd5c5" stroke="none"/><path d="M380 267 H522" fill="none" stroke-width="12"/></g>
+          </g>
+          <circle cx="451" cy="202" r="65" fill="none"/>
+        </g>
+      </svg>
+    </div>
+  </main>
+  <footer>
+    <span id="status" aria-live="polite">Resting</span>
+    <button id="toggle" type="button" aria-pressed="false">Pause</button>
+  </footer>
+  <script>
+    const creature = document.querySelector('.creature');
+    const companion = creature.cloneNode(true);
+    creature.after(companion);
+    const toggle = document.querySelector('#toggle');
+    const status = document.querySelector('#status');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let playing = !reducedMotion.matches;
+    let lastFrame = null;
+
+    function showState() {
+      toggle.textContent = playing ? 'Pause' : 'Play';
+      toggle.setAttribute('aria-pressed', String(!playing));
+      status.textContent = playing ? 'Resting' : 'Paused';
+    }
+
+    toggle.addEventListener('click', () => {
+      playing = !playing;
+      lastFrame = null;
+      showState();
+    });
+    showState();
+
+    function createAnimator(creature, instance) {
+      const clipId = `eye-clip-${instance}`;
+      creature.querySelector('#eye-clip').id = clipId;
+      creature.querySelector('#eyelids').setAttribute('clip-path', `url(#${clipId})`);
+      const cilia = creature.querySelector('#cilia');
+      const original = cilia.querySelector('path');
+      const upperLid = creature.querySelector('#upper-lid');
+      const lowerLid = creature.querySelector('#lower-lid');
+      const pupil = creature.querySelector('#pupil');
+      const details = [...creature.querySelector('#internal-details').children].map((element, index) => ({
+        element, phase: Math.random() * Math.PI * 2, speed: .32 + Math.random() * .16, amplitude: 3 + index,
+      }));
+      if (!original || !upperLid || !lowerLid || !pupil) {
+        status.id = 'error';
+        status.textContent = 'Could not load the character artwork.';
+        toggle.disabled = true;
+        throw new Error('Character artwork is missing');
+      }
+
+      const segments = [...original.getAttribute('d').matchAll(/M([\d.]+)\s+([\d.]+)\s+L([\d.]+)\s+([\d.]+)/g)];
+      if (!segments.length) {
+        status.id = 'error';
+        status.textContent = 'Could not load the cilia.';
+        toggle.disabled = true;
+        throw new Error('Cilia are missing');
+      }
+      const hairs = segments.map((segment, index) => {
+        const [startX, startY, endX, endY] = segment.slice(1).map(Number);
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', startX);
+        line.setAttribute('y1', startY);
+        line.setAttribute('x2', endX);
+        line.setAttribute('y2', endY);
+        cilia.append(line);
+        return { line, startX, startY, phase: index * Math.PI * 4 / segments.length };
+      });
+      original.remove();
+      const wavePhase = Math.random() * Math.PI * 2;
+      const wavePeriod = 1.45 + Math.random() * .4;
+      let elapsed = 0;
+      let blinkAt = 2 + Math.random() * 3;
+      let nextGlance = 2.5 + Math.random() * 2.5;
+      let glanceStart = null;
+      let glanceDuration = 0;
+      let gazeX = 0;
+      let gazeY = 0;
+      let fromAngle = (Math.random() - .5) * 4;
+      let toAngle = (Math.random() < .5 ? -1 : 1) * (4 + Math.random() * 4);
+      let turnStart = 0;
+      let turnDuration = 3 + Math.random() * 2;
+
+      return delta => {
+          elapsed += delta;
+          if (elapsed - turnStart >= turnDuration) {
+            fromAngle = toAngle;
+            toAngle = (toAngle > 0 ? -1 : 1) * (4 + Math.random() * 4);
+            turnStart = elapsed;
+            turnDuration = 3 + Math.random() * 2;
+          }
+          const progress = Math.min((elapsed - turnStart) / turnDuration, 1);
+          const ease = (1 - Math.cos(Math.PI * progress)) / 2;
+          creature.style.transform = `rotate(${fromAngle + (toAngle - fromAngle) * ease}deg)`;
+          for (const hair of hairs) {
+            const angle = 20 * Math.sin(elapsed * Math.PI * 2 / wavePeriod - hair.phase + wavePhase);
+            hair.line.setAttribute('transform', `rotate(${angle} ${hair.startX} ${hair.startY})`);
+          }
+          for (const detail of details) {
+            const horizontal = detail.amplitude * Math.sin(elapsed * detail.speed + detail.phase);
+            const vertical = detail.amplitude * .7 * Math.cos(elapsed * detail.speed * .8 + detail.phase);
+            detail.element.setAttribute('transform', `translate(${horizontal} ${vertical})`);
+          }
+          if (glanceStart === null && elapsed >= nextGlance) {
+            const direction = Math.floor(Math.random() * 8) * Math.PI / 4;
+            gazeX = 39 * Math.cos(direction);
+            gazeY = 39 * Math.sin(direction);
+            glanceStart = elapsed;
+            glanceDuration = .35 + Math.random() * .3;
+          }
+          let gazeAmount = 0;
+          if (glanceStart !== null) {
+            const glanceAge = elapsed - glanceStart;
+            const flick = .1;
+            const total = glanceDuration + flick * 2;
+            if (glanceAge >= total) {
+              glanceStart = null;
+              nextGlance = elapsed + 2.5 + Math.random() * 2.5;
+            } else {
+              gazeAmount = Math.min(1, glanceAge / flick, (total - glanceAge) / flick);
+            }
+          }
+          pupil.setAttribute('transform', `translate(${gazeX * gazeAmount} ${gazeY * gazeAmount})`);
+          const blinkAge = elapsed - blinkAt;
+          if (blinkAge >= .22) blinkAt = elapsed + 2.5 + Math.random() * 4;
+          const closure = blinkAge >= 0 && blinkAge < .22 ? 1 - Math.abs(1 - 2 * blinkAge / .22) : 0;
+          upperLid.setAttribute('transform', `translate(0 ${65 * closure})`);
+          lowerLid.setAttribute('transform', `translate(0 ${-65 * closure})`);
+      };
+    }
+
+    const animators = [creature, companion].map(createAnimator);
+    function animate(now) {
+      if (playing) {
+        const delta = lastFrame === null ? 0 : Math.min((now - lastFrame) / 1000, .05);
+        lastFrame = now;
+        for (const update of animators) update(delta);
+      } else {
+        lastFrame = null;
+      }
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>
