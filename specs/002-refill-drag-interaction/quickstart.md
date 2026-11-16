@@ -20,7 +20,7 @@ npm run test:e2e
 npm run build
 ```
 
-Add focused tests for every refill boundary and exactly one draw per spawn, unchanged initial generation, and deterministic cascades using the new refill weights. Browser checks must cover visible movement and neighbor slide before release, return to origin, switching direction, edge confinement, out-of-bounds release, invalid swap, pointer cancellation, reset during drag, stale release, tap selection, and matching mouse/touch outcomes. Test methods should follow `specs/002-refill-drag-interaction/contracts/interaction.md` without exposing production fixture controls.
+Add focused tests for every equal-probability refill boundary and exactly one draw per spawn, unchanged initial generation, and deterministic cascades using the uniform refill distribution. Browser checks must cover visible movement and neighbor slide before release, return to origin, switching direction, edge confinement, out-of-bounds release, invalid swap, pointer cancellation, reset during drag, stale release, tap selection, and matching mouse/touch outcomes. Test methods should follow `specs/002-refill-drag-interaction/contracts/interaction.md` without exposing production fixture controls.
 
 Vite's build does not replace the type-check. Report pre-existing failures separately from new regressions; do not mark a failing test or an unavailable device check as passed.
 

@@ -10,6 +10,15 @@ export function boardWith(entries: Array<[number, number, Level]> = [], fill: Le
   );
 }
 
+export function boardWithoutActivations(entries: Array<[number, number, Level]> = []): Board {
+  const board = boardWith(entries);
+  const overrides = new Set(entries.map(([row, col]) => `${row},${col}`));
+  for (let row = 0; row < 8; row++) for (let col = 0; col < 8; col++) {
+    if (!overrides.has(`${row},${col}`)) board[row][col]!.level = (row + col) % 2 === 0 ? 0 : 4;
+  }
+  return board;
+}
+
 export const pos = (row: number, col: number): Position => ({ row, col });
 
 export function boardWithReaction(

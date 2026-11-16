@@ -26,18 +26,18 @@
 
 ## Phase 3: User Story 1 - Rebalanced Replenishment (Priority: P1)
 
-**Goal**: Refill using weights 5:4:3:2:1 while leaving initial and reset generation unchanged.
+**Goal**: Refill with equal probability for levels 0 through 4 while leaving initial and reset generation unchanged.
 
 **Independent Test**: Refill known empty cells with scripted values on both sides of each distribution boundary; verify levels, exactly one draw per spawn, and unchanged seeded initial boards.
 
 ### Tests for User Story 1
 
-- [X] T005 [P] [US1] Add `tests/unit/refill-weights.test.ts` covering values at and immediately around 5/15, 9/15, 12/15, and 14/15, invalid draws, all five output levels, and one random draw per spawn.
+- [X] T005 [P] [US1] Add `tests/unit/refill-weights.test.ts` covering values at and immediately around 1/5, 2/5, 3/5, and 4/5, invalid draws, all five output levels, and one random draw per spawn.
 - [X] T006 [P] [US1] Add `tests/unit/refill-integration.test.ts` covering multi-column independent refill, fixed draw order, starting/reset generation and reacting-swap guarantees unchanged for controlled seeds, and cascades using the new refill distribution.
 
 ### Implementation for User Story 1
 
-- [X] T007 [US1] Add a dedicated replenishment sampler in `src/game/random.ts` with half-open cumulative intervals for weights 5:4:3:2:1 and retain the existing starting-board sampler unchanged.
+- [X] T007 [US1] Add a dedicated replenishment sampler in `src/game/random.ts` with half-open cumulative intervals for equal level probabilities and retain the existing starting-board sampler unchanged.
 - [X] T008 [US1] Update `src/game/board.ts` so `refillBoard` uses the replenishment sampler for every spawn while `generateBoard` and reset continue using the original distribution; retain random injection and column ordering.
 - [X] T009 [US1] Run the focused refill tests in `tests/unit/refill-weights.test.ts` and `tests/unit/refill-integration.test.ts`; resolve new failures and compare existing unit results to the recorded baseline.
 

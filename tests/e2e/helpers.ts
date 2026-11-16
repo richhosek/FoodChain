@@ -12,12 +12,28 @@ export function boardLevels(predators: Array<[number, number]>, base = 0): numbe
   return levels;
 }
 
-export async function startWithLevels(page: Page, levels: number[], draws: number[] = []): Promise<void> {
-  await page.addInitScript(({ initialLevels, refillDraws }) => {
+export function alternatingLevels(entries: Array<[number, number, number]>): number[] {
+  const levels: number[] = Array.from({ length: 64 }, (_, index) => (Math.floor(index / 8) + index % 8) % 2 === 0 ? 0 : 4);
+  for (const [row, col, level] of [[7, 5, 2], [7, 6, 3], [7, 7, 4], ...entries]) levels[row * 8 + col] = level;
+  return levels;
+}
+
+export const cascadeLevels = (): number[] => alternatingLevels([
+  [2, 2, 1], [2, 3, 1], [2, 4, 1], [3, 3, 0], [3, 4, 0], [0, 3, 0],
+]);
+
+export const apexLevels = (): number[] => alternatingLevels([
+  [0, 1, 1], [0, 2, 1], [0, 3, 1], [3, 3, 3], [2, 3, 4], [3, 4, 4], [4, 3, 4], [3, 1, 4], [3, 2, 0],
+]);
+
+export const alternatingRefill = Array.from({ length: 64 }, (_, index) => (Math.floor(index / 8) + index % 8) % 2 === 0 ? 0 : .9);
+
+export async function startWithLevels(page: Page, levels: number[], draws: number[] = [], resetSeed?: number): Promise<void> {
+  await page.addInitScript(({ initialLevels, refillDraws, resetSeed }) => {
     const values = [0, .4, .67, .84, .94];
     let index = 0;
     let refillIndex = -1;
-    let state = 123;
+    let state = resetSeed ?? 123;
     (window as unknown as { armRefill: () => void }).armRefill = () => { refillIndex = 0; };
     Math.random = () => {
       if (index < initialLevels.length) return values[initialLevels[index++]];
@@ -26,9 +42,10 @@ export async function startWithLevels(page: Page, levels: number[], draws: numbe
       let value = state;
       value = Math.imul(value ^ (value >>> 15), value | 1);
       value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
-      return (((value ^ (value >>> 14)) >>> 0) / 4294967296) * .39;
+      const random = ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+      return resetSeed === undefined ? random * .39 : random;
     };
-  }, { initialLevels: levels, refillDraws: draws });
+  }, { initialLevels: levels, refillDraws: draws, resetSeed });
   await page.goto('/');
   await expect(page.getByRole('status')).toHaveText('Choose two neighboring creatures.');
   await expect.poll(() => readLevels(page)).toEqual(levels);

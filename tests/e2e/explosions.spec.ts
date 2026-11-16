@@ -10,7 +10,8 @@ for (const count of [4, 5, 6, 7, 8]) {
       const { resolveWave } = await import(gamePath);
       const { BoardView } = await import(viewPath);
       const surrounding = [[2, 2], [2, 3], [2, 4], [3, 2], [3, 4], [4, 2], [4, 3], [4, 4]];
-      const board = Array.from({ length: 8 }, (_, row) => Array.from({ length: 8 }, (_, col) => ({ id: `${row}-${col}`, level: 0 })));
+      const board = Array.from({ length: 8 }, (_, row) => Array.from({ length: 8 }, (_, col) => ({ id: `${row}-${col}`, level: (row + col) % 2 === 0 ? 0 : 4 })));
+      board[3][3].level = 0;
       for (const [row, col] of surrounding.slice(0, predatorCount)) board[row][col].level = 1;
       const wave = resolveWave(board, [{ row: 3, col: 3 }], (level: number) => ({ id: 'created', level }));
       const mount = document.createElement('div');
@@ -51,7 +52,7 @@ for (const count of [4, 5, 6, 7, 8]) {
       if (!inverted && sample[18] !== '241,211,148') continue;
       for (let index = 0; index < 64; index++) {
         const predator = [[2, 2], [2, 3], [2, 4], [3, 2], [3, 4], [4, 2], [4, 3], [4, 4]].slice(0, count).some(([row, col]) => row * 8 + col === index);
-        const normal = predator ? [241, 211, 148] : [185, 220, 184];
+        const normal = predator ? [241, 211, 148] : (Math.floor(index / 8) + index % 8) % 2 === 0 ? [185, 220, 184] : [182, 185, 217];
         const expected = normal.map(channel => affected[index] && inverted ? 255 - channel : channel).join(',');
         expect(sample[index]).toBe(expected);
       }
@@ -67,7 +68,7 @@ for (const count of [4, 5, 6, 7, 8]) {
         expect(result.after[index]).not.toBe('241,211,148');
       } else {
         expect(result.afterBoard[Math.floor(index / 8)][index % 8]).not.toBeNull();
-        expect(result.after[index]).toBe('185,220,184');
+        expect(result.after[index]).toBe((Math.floor(index / 8) + index % 8) % 2 === 0 ? '185,220,184' : '182,185,217');
       }
     }
   });

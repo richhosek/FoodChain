@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test';
-import { boardLevels, startWithLevels, swap } from './helpers.ts';
+import { cascadeLevels, startWithLevels, swap } from './helpers.ts';
 
 test('plays a move and resets the level', async ({ page }) => {
-  await page.goto('/');
+  await startWithLevels(page, cascadeLevels(), [], 10);
   await expect(page.getByRole('heading', { name: 'Food Chain', exact: true })).toBeVisible();
   await expect(page.getByTestId('removed')).toHaveText('0');
-  await expect(page.getByTestId('target')).toHaveText('10');
+  await expect(page.getByTestId('target')).toHaveText('100');
   await expect(page.getByTestId('turns')).toHaveText('0');
   await expect(page.getByTestId('free-moves')).toHaveText('3');
 
@@ -194,7 +194,7 @@ test('refill moves survivors down and introduces new creatures from above', asyn
 });
 
 test('a landed survivor triggers the next reaction wave', async ({ page }) => {
-  await startWithLevels(page, boardLevels([[2, 2], [2, 3], [2, 4]]), [.4, .4, .4]);
+  await startWithLevels(page, cascadeLevels(), [.2, .2, .2], 10);
   await page.evaluate(async () => {
     const viewPath = '/src/view/board-view.ts';
     const { BoardView } = await import(viewPath);

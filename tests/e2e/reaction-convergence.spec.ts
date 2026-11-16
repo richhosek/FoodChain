@@ -59,7 +59,7 @@ test('predators converge over 1000ms before the reaction board is rendered', asy
   expect(result.renderedPieceCount).toBe(result.expectedPieceCount);
 });
 
-test('shared predators get temporary visuals and abort restores the board', async ({ page }) => {
+test('only selected predators converge and abort restores the board', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('canvas')).toBeVisible();
   const result = await page.evaluate(async () => {
@@ -72,11 +72,11 @@ test('shared predators get temporary visuals and abort restores the board', asyn
     const secondPrey = { row: 3, col: 5 };
     const positions = [
       { row: 2, col: 3 }, { row: 3, col: 4 }, { row: 4, col: 3 }, { row: 3, col: 2 },
-      { row: 2, col: 5 }, { row: 3, col: 6 }, { row: 4, col: 5 },
+      { row: 2, col: 5 }, { row: 3, col: 6 },
     ];
     positions.forEach(position => { board[position.row][position.col]!.level = 1; });
     const wave = resolveWave(board, [firstPrey, secondPrey], (level: Level) => ({ id: `created-${level}`, level }));
-    if (!wave || wave.reactions.length !== 2) throw new Error('Expected two simultaneous reactions');
+    if (!wave || wave.reactions.length !== 1) throw new Error('Expected one selected reaction');
     const mount = document.createElement('div');
     document.body.append(mount);
     const view = new BoardView(mount, board, () => {}, () => false);
@@ -95,22 +95,27 @@ test('shared predators get temporary visuals and abort restores the board', asyn
       (error: unknown) => error instanceof Error ? error.name : String(error),
     );
     const shared = internals.cells.get('3,4');
-    if (!shared) throw new Error('Shared predator is missing');
+    const unselected = internals.cells.get('2,5');
+    if (!shared || !unselected) throw new Error('Expected predators are missing');
     const original = { x: shared.x, y: shared.y };
+    const unselectedOriginal = { x: unselected.x, y: unselected.y };
     await new Promise(resolve => setTimeout(resolve, 250));
     const childrenDuring = internals.scene.children.list.length;
     const sharedMoved = shared.x !== original.x || shared.y !== original.y;
+    const unselectedStayed = unselected.x === unselectedOriginal.x && unselected.y === unselectedOriginal.y;
     controller.abort();
     const outcome = await pending;
     const childrenAfter = internals.scene.children.list.length;
     const restored = shared.x === original.x && shared.y === original.y;
     mount.remove();
-    return { reactions: wave.reactions.length, initialChildren, childrenDuring, childrenAfter, sharedMoved, restored, outcome };
+    return { reactions: wave.reactions.length, selectedPrey: wave.reactions[0].prey.position, initialChildren, childrenDuring, childrenAfter, sharedMoved, unselectedStayed, restored, outcome };
   });
 
-  expect(result.reactions).toBe(2);
-  expect(result.childrenDuring).toBeGreaterThan(result.initialChildren);
+  expect(result.reactions).toBe(1);
+  expect(result.selectedPrey).toEqual({ row: 3, col: 3 });
+  expect(result.childrenDuring).toBe(result.initialChildren);
   expect(result.sharedMoved).toBe(true);
+  expect(result.unselectedStayed).toBe(true);
   expect(result.outcome).toBe('AbortError');
   expect(result.childrenAfter).toBe(result.initialChildren);
   expect(result.restored).toBe(true);

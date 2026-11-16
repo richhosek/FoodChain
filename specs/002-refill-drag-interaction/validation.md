@@ -16,3 +16,11 @@
 - Live browser: desktop board and target 100 observed; mobile-sized viewport loaded without horizontal overflow. Automated mobile Chromium tests cover simulated touch; this is not physical-device verification.
 - Physical iOS and Android touch and outside-release checks: unverified, devices unavailable.
 - Five-participant preview/reversal task (SC-005): unverified, participants unavailable.
+
+## Subsequent Refill Distribution Update
+
+The refill distribution was later changed by request from 5:4:3:2:1 to uniform probability across levels 0 through 4. The refill-only sampler was updated; starting and reset generation remain unchanged.
+
+- `node --test tests/unit/refill-weights.test.ts tests/unit/refill-integration.test.ts`: 5 passed, including equal-probability boundaries, invalid draws, spawn draw order, unchanged seeded starting/reset boards, and deterministic cascades.
+- `node --test --test-name-pattern="landed and spawned creatures resolve|gravity preserves order" tests/unit/domain.test.ts`: 2 passed.
+- `npm run typecheck`: passed.

@@ -2,11 +2,11 @@
 
 ## Replenishment Distribution
 
-**Decision**: Retain `sampleLevel` for starting and reset boards; add a separate replenishment sampler used only by `refillBoard`. Use cumulative thresholds 5/15, 9/15, 12/15, 14/15, and 15/15 with one injected random draw per new creature.
+**Decision**: Retain `sampleLevel` for starting and reset boards; use a separate replenishment sampler only in `refillBoard`. Use cumulative thresholds 1/5, 2/5, 3/5, 4/5, and 1 with one injected random draw per new creature.
 
-**Rationale**: Both `generateBoard` and `refillBoard` currently use `sampleLevel`, so changing that sampler would silently change the starting distribution and invalidate its guarantees. The new thresholds express the requested ratios exactly and preserve seeded/scripted reproducibility.
+**Rationale**: Starting/reset generation and refills have separate samplers, so the uniform refill rule does not silently change starting-board distribution or its validity guarantees. Equal intervals preserve seeded/scripted reproducibility.
 
-**Alternatives considered**: Replacing the shared thresholds would alter starting boards. Reweighting existing boards after generation would distort the independent refill distribution and introduce extra random draws.
+**Alternatives considered**: Replacing the starting sampler would alter starting boards. Reweighting existing boards after generation would distort the independent refill distribution and introduce extra random draws.
 
 ## Drag Input and Visual Preview
 

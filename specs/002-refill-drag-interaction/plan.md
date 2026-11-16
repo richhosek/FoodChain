@@ -6,7 +6,7 @@
 
 ## Summary
 
-Introduce a refill-only 5:4:3:2:1 probability distribution while preserving starting-board generation. Show a reversible drag preview using Phaser display objects and a single pointer gesture; submit one swap only on release to the existing game controller.
+Use a refill-only uniform probability distribution across levels 0 through 4 while preserving starting-board generation. Show a reversible drag preview using Phaser display objects and a single pointer gesture; submit one swap only on release to the existing game controller.
 
 ## Technical Context
 

@@ -2,8 +2,8 @@
 
 ## Replenishment
 
-- After any clearance, newly generated creatures enter from the top of their columns using independent 5:4:3:2:1 weights for levels 0-4. Refill does not change initial or reset board generation.
-- Scripted values at and immediately around 5/15, 9/15, 12/15 and 14/15 must map consistently to the corresponding half-open intervals in `specs/002-refill-drag-interaction/data-model.md`.
+- After any clearance, newly generated creatures enter from the top of their columns with equal independent probability for levels 0-4. Refill does not change initial or reset board generation.
+- Scripted values at and immediately around 1/5, 2/5, 3/5 and 4/5 must map consistently to the corresponding half-open intervals in `specs/002-refill-drag-interaction/data-model.md`.
 
 ## Pointer and Board
 

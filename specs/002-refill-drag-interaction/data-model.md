@@ -6,11 +6,11 @@ The existing level type is 0 through 4. For one uniform random value `value` in 
 
 | Level | Weight | Interval |
 | --- | --- | --- |
-| 0 | 5 | `[0, 5/15)` |
-| 1 | 4 | `[5/15, 9/15)` |
-| 2 | 3 | `[9/15, 12/15)` |
-| 3 | 2 | `[12/15, 14/15)` |
-| 4 | 1 | `[14/15, 1)` |
+| 0 | 1 | `[0, 1/5)` |
+| 1 | 1 | `[1/5, 2/5)` |
+| 2 | 1 | `[2/5, 3/5)` |
+| 3 | 1 | `[3/5, 4/5)` |
+| 4 | 1 | `[4/5, 1)` |
 
 Each refill spawn consumes exactly one injected draw; invalid random values remain errors. The starting/reset generator continues using its original sampler and board acceptance checks. Refill preserves existing per-column draw order and falls, and newly spawned creatures remain eligible for cascades.
 

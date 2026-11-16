@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { boardWith, pos } from '../fixtures/boards.ts';
+import { boardWith, boardWithoutActivations, pos } from '../fixtures/boards.ts';
 import { seededRandom, scriptedRandom, sampleLevel } from '../../src/game/random.ts';
 import { generateBoard, neighbors, swapBoard, predictsReaction, hasReactingSwap, refillBoard } from '../../src/game/board.ts';
 import { resolveWave } from '../../src/game/mechanics.ts';
@@ -47,7 +47,7 @@ test('neighbors and pure swap prediction include diagonals and exclude stationar
 test('waves handle predator thresholds, blasts, apex, and overlapping creations', () => {
   const surrounding: Array<[number, number]> = [[2, 2], [2, 3], [2, 4], [3, 2], [3, 4], [4, 2], [4, 3], [4, 4]];
   for (let count = 2; count <= 8; count++) {
-    const board = boardWith(surrounding.slice(0, count).map(([row, col]) => [row, col, 1]));
+    const board = boardWithoutActivations([[3, 3, 0], ...surrounding.slice(0, count).map(([row, col]): [number, number, Level] => [row, col, 1])]);
     const wave = resolveWave(board, [pos(3, 3)], makeCreature);
     if (count === 2) { assert.equal(wave, null); continue; }
     assert.ok(wave);
@@ -62,13 +62,13 @@ test('waves handle predator thresholds, blasts, apex, and overlapping creations'
   assert.equal(apexWave.removed.length, 64);
   assert.equal(apexWave.creations.length, 0);
 
-  const overlap = boardWith([[2, 2, 1], [2, 3, 1], [2, 4, 1], [3, 2, 1], [3, 4, 1], [4, 2, 1], [4, 3, 1], [4, 4, 1]]);
+  const overlap = boardWithoutActivations([[3, 3, 0], [3, 5, 0], [2, 2, 1], [2, 3, 1], [2, 4, 1], [3, 2, 1], [3, 4, 1], [4, 2, 1], [4, 3, 1], [4, 4, 1]]);
   const combined = resolveWave(overlap, [pos(3, 3), pos(3, 5), pos(3, 3)], makeCreature);
   assert.ok(combined);
-  assert.equal(combined.reactions.length, 2);
-  assert.equal(combined.creations.length, 2);
+  assert.equal(combined.reactions.length, 1);
+  assert.equal(combined.creations.length, 1);
   assert.equal(combined.after[3][3]?.level, 2);
-  assert.equal(combined.after[3][5]?.level, 1);
+  assert.equal(combined.after[3][5], null);
   assert.equal(new Set(combined.removed.map(item => item.creature.id)).size, combined.removed.length);
 });
 
@@ -129,7 +129,7 @@ test('generation aborts while an asynchronous yield remains pending', async () =
 });
 
 test('non-reacting turns spend free moves and lose when none remain', async () => {
-  const level = new GameLevel(boardWith(), { random: () => 0 });
+  const level = new GameLevel(boardWithoutActivations(), { random: seededRandom(1) });
   assert.equal(await level.move(pos(0, 0), pos(1, 1)), false);
   for (let turn = 1; turn <= 3; turn++) {
     assert.equal(await level.move(pos(0, 0), pos(0, 1)), true);
@@ -143,48 +143,50 @@ test('non-reacting turns spend free moves and lose when none remain', async () =
 });
 
 test('non-reacting swaps do not emit reaction effects', async () => {
-  const level = new GameLevel(boardWith(), { random: () => 0 });
+  const level = new GameLevel(boardWithoutActivations(), { random: seededRandom(1) });
   const events: string[] = [];
   assert.equal(await level.move(pos(0, 0), pos(0, 1), event => { events.push(event.type); }), true);
   assert.deepEqual(events, []);
 });
 
 test('zero free moves reject non-reacting swaps but permit reacting swaps and prioritize winning', async () => {
-  const board = boardWith([[2, 2, 1], [2, 3, 1], [2, 4, 1], [3, 2, 1], [4, 2, 1]]);
+  const board = boardWithoutActivations([[2, 2, 1], [2, 3, 1], [2, 4, 1], [3, 2, 1], [4, 2, 1], [3, 3, 0], [3, 4, 0]]);
   let draws = 0;
-  const level = new GameLevel(board, { random: () => { draws++; return 0; }, yieldControl: async () => {} });
+  const random = seededRandom(1);
+  const level = new GameLevel(board, { random: () => { draws++; return random(); }, yieldControl: async () => {} });
   for (let turn = 0; turn < 3; turn++) assert.equal(await level.move(pos(7, 6), pos(7, 7)), true);
   assert.equal(level.state.status, 'ready');
   const before = level.state;
   assert.equal(await level.move(pos(7, 6), pos(7, 7)), false);
   assert.deepEqual(level.state, before);
   assert.equal(draws, 0);
+  (level as unknown as { current: { removed: number } }).current.removed = 99;
   assert.equal(await level.move(pos(3, 3), pos(3, 4)), true);
   assert.equal(level.state.turns, 4);
   assert.equal(level.state.freeMoves, 0);
   assert.equal(level.state.status, 'won');
 });
 
-test('both swapped prey react from one snapshot with shared predators counted once', async () => {
-  const board = boardWith([[2, 2, 1], [2, 3, 1], [2, 4, 1], [2, 5, 1]]);
-  const level = new GameLevel(board, { random: () => 0, yieldControl: async () => {} });
+test('swapped prey with shared predators select only one reaction', async () => {
+  const board = boardWithoutActivations([[2, 2, 1], [2, 3, 1], [2, 4, 1], [2, 5, 1], [3, 3, 0], [3, 4, 0]]);
+  const level = new GameLevel(board, { random: seededRandom(1), yieldControl: async () => {} });
   let firstWave = true;
   await level.move(pos(3, 3), pos(3, 4), event => {
     if (event.type === 'reaction' && firstWave) {
       firstWave = false;
-      assert.equal(event.wave.reactions.length, 2);
-      assert.equal(event.wave.removed.length, 6);
-      assert.equal(event.wave.creations.length, 2);
+      assert.equal(event.wave.reactions.length, 1);
+      assert.deepEqual(event.wave.reactions[0].prey.position, pos(3, 3));
+      assert.equal(event.wave.removed.length, 4);
+      assert.equal(event.wave.creations.length, 1);
     }
   });
   assert.equal(firstWave, false);
-  assert.equal(level.state.removed, 2);
+  assert.equal(level.state.removed, 1);
 });
 
 test('landed and spawned creatures resolve in later snapshots without extra turns', async () => {
-  const draws = [.4, .4, .4];
-  const level = new GameLevel(boardWith([[2, 2, 1], [2, 3, 1], [2, 4, 1]]), {
-    random: () => draws.shift() ?? 0,
+  const level = new GameLevel(boardWithoutActivations([[2, 2, 1], [2, 3, 1], [2, 4, 1], [3, 3, 0], [3, 4, 0]]), {
+    random: seededRandom(10),
     yieldControl: async () => {},
   });
   const events: string[] = [];
@@ -192,38 +194,39 @@ test('landed and spawned creatures resolve in later snapshots without extra turn
     events.push(event.type);
     assert.equal(level.state.status, 'resolving');
     if (event.type === 'reaction' && events.length === 3) {
-      assert.deepEqual(event.wave.reactions.map(reaction => reaction.prey.position), [pos(1, 3)]);
+      assert.deepEqual(event.wave.reactions.map(reaction => reaction.prey.position), [pos(0, 4)]);
     }
   }), true);
   assert.deepEqual(events, ['reaction', 'refill', 'reaction', 'refill']);
-  assert.equal(level.state.removed, 2);
+  assert.equal(level.state.removed, 1);
   assert.equal(level.state.turns, 1);
   assert.equal(level.state.freeMoves, 3);
   assert.equal(level.state.status, 'ready');
 });
 
 test('goal is counted from collateral and only wins after the refill animation', async () => {
-  const board = boardWith([[2, 2, 1], [2, 3, 1], [2, 4, 1], [3, 2, 1], [4, 2, 1]]);
-  const level = new GameLevel(board, { random: () => 0, yieldControl: async () => {} });
+  const board = boardWithoutActivations([[2, 2, 1], [2, 3, 1], [2, 4, 1], [3, 2, 1], [4, 2, 1], [3, 3, 0], [3, 4, 0]]);
+  const level = new GameLevel(board, { random: seededRandom(1), yieldControl: async () => {} });
+  (level as unknown as { current: { removed: number } }).current.removed = 99;
   assert.equal(await level.move(pos(3, 3), pos(3, 4), event => {
     assert.equal(level.state.status, 'resolving');
-    if (event.type === 'refill') assert.ok(level.state.removed >= 10);
+    if (event.type === 'refill') assert.ok(level.state.removed >= 100);
   }), true);
   assert.equal(level.state.status, 'won');
-  assert.ok(level.state.removed >= 10);
+  assert.ok(level.state.removed >= 100);
   assert.equal(level.state.board.flat().filter(Boolean).length, 64);
 });
 
 test('a reached goal stays resolving through a subsequent reaction wave', async () => {
-  const board = boardWith([[2, 2, 1], [2, 3, 1], [2, 4, 1], [3, 2, 1], [4, 2, 1]]);
-  const draws = Array.from({ length: 14 }, (_, index) => [0, 5, 10].includes(index) ? .4 : 0);
-  const level = new GameLevel(board, { random: () => draws.shift() ?? 0, yieldControl: async () => {} });
+  const board = boardWithoutActivations([[2, 2, 1], [2, 3, 1], [2, 4, 1], [3, 2, 1], [4, 2, 1], [3, 3, 0], [3, 4, 0]]);
+  const level = new GameLevel(board, { random: seededRandom(2), yieldControl: async () => {} });
+  (level as unknown as { current: { removed: number } }).current.removed = 99;
   let reactions = 0;
   await level.move(pos(3, 3), pos(3, 4), event => {
     if (event.type === 'reaction') {
       reactions++;
       if (reactions === 2) {
-        assert.ok(level.state.removed >= 10);
+        assert.ok(level.state.removed >= 100);
         assert.equal(level.state.status, 'resolving');
       }
     }
@@ -253,7 +256,7 @@ test('external move cancellation rolls back state while aborting the effect sign
 });
 
 test('aborting reset during generation restores a usable previous session', async () => {
-  const level = new GameLevel(boardWith(), { random: () => 0, generationBatchSize: 1, yieldControl: () => new Promise<void>(() => {}) });
+  const level = new GameLevel(boardWithoutActivations(), { random: () => 0, generationBatchSize: 1, yieldControl: () => new Promise<void>(() => {}) });
   const before = level.state;
   const controller = new AbortController();
   const resetting = level.reset(controller.signal);
@@ -317,24 +320,23 @@ test('generation retries a rejected board and returns all levels with a reacting
 test('reset from both terminal states restores a fresh playable session', async () => {
   for (const terminal of ['won', 'lost'] as const) {
     const random = seededRandom(123);
-    let resetting = false;
     const board = terminal === 'won'
-      ? boardWith([[2, 2, 1], [2, 3, 1], [2, 4, 1], [3, 2, 1], [4, 2, 1]])
-      : boardWith();
-    const level = new GameLevel(board, { random: () => resetting ? random() : 0, yieldControl: async () => {} });
+      ? boardWithoutActivations([[2, 2, 1], [2, 3, 1], [2, 4, 1], [3, 2, 1], [4, 2, 1], [3, 3, 0], [3, 4, 0]])
+      : boardWithoutActivations();
+    const level = new GameLevel(board, { random: () => random(), yieldControl: async () => {} });
     if (terminal === 'won') {
+      (level as unknown as { current: { removed: number } }).current.removed = 99;
       assert.equal(await level.move(pos(3, 3), pos(3, 4)), true);
     } else {
       for (let turn = 0; turn < 3; turn++) assert.equal(await level.move(pos(0, 0), pos(0, 1)), true);
     }
     assert.equal(level.state.status, terminal);
     const epoch = level.state.epoch;
-    resetting = true;
     await level.reset();
     const state = level.state;
     assert.equal(state.status, 'ready');
     assert.equal(state.epoch, epoch + 1);
-    assert.equal(state.target, 10);
+    assert.equal(state.target, 100);
     assert.equal(state.removed, 0);
     assert.equal(state.turns, 0);
     assert.equal(state.freeMoves, 3);
@@ -347,7 +349,7 @@ test('reset from both terminal states restores a fresh playable session', async 
 
 test('reset cancels an eight-wave cascade and ignores its delayed effect', async () => {
   const resetRandom = seededRandom(123);
-  const cascadeRandom = seededRandom(7);
+  const cascadeRandom = seededRandom(0);
   let resetting = false;
   const level = new GameLevel(boardWith([[2, 2, 4], [2, 3, 4], [2, 4, 4]], 3), {
     random: () => resetting ? resetRandom() : cascadeRandom(),

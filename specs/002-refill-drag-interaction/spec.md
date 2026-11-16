@@ -6,22 +6,22 @@
 
 **Status**: Draft
 
-**Input**: Rebalance replenishment using weights 5:4:3:2:1, and show a dragged creature and a reversible neighboring swap before committing the move on release.
+**Input**: Generate replacement creatures at equal probability for all five levels, and show a dragged creature and a reversible neighboring swap before committing the move on release.
 
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Rebalanced Replenishment (Priority: P1)
 
-As a player, I see a more balanced mix of creature levels entering the board after creatures are removed, making higher levels more common than under the current replenishment weights.
+As a player, I see all creature levels enter the board at equal probability when removed creatures are replaced.
 
 **Why this priority**: Replenishment occurs throughout play and directly influences the balance of the food chain.
 
-**Independent Test**: Refill known empty cells using controlled random values and verify the resulting level for each of the five probability intervals.
+**Independent Test**: Refill known empty cells using controlled random values and verify that each of the five equal probability intervals maps to its corresponding creature level.
 
 **Acceptance Scenarios**:
 
-1. **Given** a cleared board cell, **When** a new creature is generated to refill it, **Then** levels 0 through 4 have relative weights 5, 4, 3, 2, and 1 respectively.
-2. **Given** reproducible random values spanning the distribution, **When** replenishment creatures are generated, **Then** the expected levels are produced with probabilities 5/15, 4/15, 3/15, 2/15, and 1/15 respectively.
+1. **Given** a cleared board cell, **When** a new creature is generated to refill it, **Then** each level from 0 through 4 has an equal one-in-five probability.
+2. **Given** reproducible random values spanning the distribution, **When** replenishment creatures are generated, **Then** values in `[0, 1/5)`, `[1/5, 2/5)`, `[2/5, 3/5)`, `[3/5, 4/5)`, and `[4/5, 1)` produce levels 0, 1, 2, 3, and 4 respectively.
 3. **Given** several vacancies, **When** they are refilled, **Then** each new creature is sampled independently and enters from the top of its column.
 4. **Given** a fresh or reset game, **When** its starting board is generated, **Then** its existing generation rules remain unchanged by the replenishment adjustment.
 
@@ -57,7 +57,7 @@ As a player, I see the creature follow my mouse or finger and the neighboring cr
 
 ### Functional Requirements
 
-- **FR-001**: Replenishment MUST sample the five existing creature levels 0 through 4 with relative weights 5:4:3:2:1, giving exact probabilities 5/15, 4/15, 3/15, 2/15, and 1/15 per generated creature.
+- **FR-001**: Replenishment MUST sample each of the five existing creature levels 0 through 4 with equal probability 1/5 per generated creature.
 - **FR-002**: Each replenishment creature MUST be drawn independently using the new distribution and enter from the top of its column under the existing refill and cascade rules.
 - **FR-003**: The new distribution MUST apply only to replenishment; starting and reset board generation MUST retain its existing distribution and validity guarantees.
 - **FR-004**: A dragged creature MUST visibly follow mouse or touch movement within the legal range throughout the gesture, rather than appearing to move only on release.
@@ -81,7 +81,7 @@ As a player, I see the creature follow my mouse or finger and the neighboring cr
 
 ### Measurable Outcomes
 
-- **SC-001**: In all controlled boundary tests, each replenishment draw maps to the correct one of the five 5:4:3:2:1 probability intervals.
+- **SC-001**: In all controlled boundary tests, each replenishment draw maps to the correct one of five equal probability intervals.
 - **SC-002**: In all tested mouse and touch drags, the creature visibly moves before release, and a neighbor moves into the origin when previewed.
 - **SC-003**: In all tested return-to-origin, cancellation, and Reset-during-drag scenarios, no preview is committed and no turn or free move is spent.
 - **SC-004**: In all tested legal releases, exactly one swap and one turn are recorded; in all tested rejected releases, the board and counters remain unchanged.
@@ -90,7 +90,7 @@ As a player, I see the creature follow my mouse or finger and the neighboring cr
 ## Assumptions
 
 - The existing square 8-by-8 board, five levels, move restrictions, starting-board distribution, and scoring/cascade rules remain in force.
-- The fixed prototype level range is 0 through 4; the weights are ordered from lowest to highest.
+- The fixed prototype level range is 0 through 4; all refill levels are equally likely.
 - A pointer beyond the legal range is constrained to the last valid neighboring preview rather than enabling a nonadjacent move.
 - A preview of an ultimately rejected non-reacting move is permissible while dragging; the existing free-move check occurs on release.
 - Sound, new creature artwork, hexagonal boards, and changes to goals or level progression are out of scope.

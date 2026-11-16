@@ -1,5 +1,5 @@
 import type { Board, Creature, Level, Position, RandomSource, ReactionWave, RefillResult } from './creature.ts';
-import { abortError, cloneBoard, generateBoard, hasReactingSwap, refillBoard, swapBoard, throwIfAborted } from './board.ts';
+import { abortError, cloneBoard, generateBoard, hasReactingSwap, meldProducingMoves, reactionCandidatesForMove, refillBoard, swapBoard, throwIfAborted } from './board.ts';
 import { resolveWave } from './mechanics.ts';
 
 export type LevelStatus = 'ready' | 'resolving' | 'won' | 'lost';
@@ -75,7 +75,8 @@ export class GameLevel {
     signal?.addEventListener('abort', externalAbort, { once: true });
     const createCreature = (level: Level): Creature => ({ id: `created-${this.current.epoch}-${this.nextId++}`, level });
     try {
-      let wave = resolveWave(swapped, [first, second], createCreature);
+      const candidates = reactionCandidatesForMove(swapped, first, second);
+      let wave = resolveWave(swapped, candidates, createCreature, [first, second]);
       if (!wave && this.current.freeMoves === 0) return false;
       this.moveCheckpoint = original;
       this.current = { ...this.current, board: swapped, turns: this.current.turns + 1, freeMoves: this.current.freeMoves - (wave ? 0 : 1), status: 'resolving' };
@@ -92,7 +93,7 @@ export class GameLevel {
         wave = resolveWave(refill.board, refill.candidates, createCreature);
       }
       const status: LevelStatus = this.current.removed >= this.current.target ? 'won'
-        : this.current.freeMoves === 0 && !hasReactingSwap(this.current.board) ? 'lost' : 'ready';
+        : this.current.freeMoves === 0 && !hasReactingSwap(this.current.board) && !meldProducingMoves(this.current.board).length ? 'lost' : 'ready';
       this.current = { ...this.current, status };
       return true;
     } catch (error) {

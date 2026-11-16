@@ -49,11 +49,22 @@ export class BoardView {
   private readonly game: Phaser.Game;
   private readonly onMove: (first: Position, second: Position) => void;
   private readonly canMove: () => boolean;
+  private readonly onInteractionStart: () => void;
+  private readonly onInteractionEnd: () => void;
 
-  constructor(parent: HTMLElement, board: Board, onMove: (first: Position, second: Position) => void, canMove: () => boolean) {
+  constructor(
+    parent: HTMLElement,
+    board: Board,
+    onMove: (first: Position, second: Position) => void,
+    canMove: () => boolean,
+    onInteractionStart: () => void = () => {},
+    onInteractionEnd: () => void = () => {},
+  ) {
     this.board = board;
     this.onMove = onMove;
     this.canMove = canMove;
+    this.onInteractionStart = onInteractionStart;
+    this.onInteractionEnd = onInteractionEnd;
     const owner = this;
     this.game = new Phaser.Game({
       type: Phaser.CANVAS, width: SIZE, height: SIZE, parent, backgroundColor: '#dce9dc',
@@ -121,6 +132,7 @@ export class BoardView {
       pointerId: event.pointerId, origin, piece, pressX: event.clientX, pressY: event.clientY,
       offsetX: point.x - piece.x, offsetY: point.y - piece.y, dragging: false, preview: null,
     };
+    this.onInteractionStart();
     try { this.game.canvas.setPointerCapture(event.pointerId); } catch { this.cancelGesture(); }
   };
 
@@ -205,6 +217,7 @@ export class BoardView {
     }
     const canvas = this.game.canvas;
     if (canvas?.hasPointerCapture(gesture.pointerId)) canvas.releasePointerCapture(gesture.pointerId);
+    this.onInteractionEnd();
   };
 
   private piece(creature: Creature, position: Position, inverted = false, tracked = true): Phaser.GameObjects.Container {
@@ -227,24 +240,14 @@ export class BoardView {
   private convergePredators(event: Extract<LevelEvent, { type: 'reaction' }>): Promise<void> {
     if (event.signal.aborted) return Promise.reject(new DOMException('Aborted', 'AbortError'));
     const targets: Array<{ piece: Phaser.GameObjects.Container; prey: Position }> = [];
-    const temporary: Phaser.GameObjects.Container[] = [];
     const originals = new Map<Phaser.GameObjects.Container, { x: number; y: number }>();
-    const used = new Set<Phaser.GameObjects.Container>();
     for (const reaction of event.wave.reactions) {
       for (const predator of reaction.predators) {
         const key = this.key(predator.position);
-        let piece = this.cells.get(key);
+        const piece = this.cells.get(key);
         if (!piece?.scene) continue;
-        if (used.has(piece)) {
-          const copy = this.piece(predator.creature, predator.position, false, false);
-          copy.setDepth(2);
-          temporary.push(copy);
-          targets.push({ piece: copy, prey: reaction.prey.position });
-        } else {
-          used.add(piece);
-          originals.set(piece, { x: piece.x, y: piece.y });
-          targets.push({ piece, prey: reaction.prey.position });
-        }
+        originals.set(piece, { x: piece.x, y: piece.y });
+        targets.push({ piece, prey: reaction.prey.position });
         piece.setDepth(2);
       }
     }
@@ -253,7 +256,6 @@ export class BoardView {
       let remaining = targets.length;
       let settled = false;
       const cleanup = (restore: boolean): void => {
-        temporary.forEach(piece => piece.destroy());
         if (restore) for (const [piece, position] of originals) {
           if (piece.scene) piece.setPosition(position.x, position.y).setDepth(0);
         }
@@ -301,6 +303,20 @@ export class BoardView {
     this.selected = null;
     this.cancelGesture();
     this.render(this.board);
+  }
+
+  async hint(position: Position, signal: AbortSignal): Promise<void> {
+    if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+    const key = this.key(position);
+    if (!this.cells.has(key)) return;
+    try {
+      await flashCells(inverted => {
+        if (signal.aborted) return;
+        this.render(this.board, inverted ? new Set([key]) : new Set());
+      }, delay, signal);
+    } finally {
+      if (!signal.aborted) this.render(this.board);
+    }
   }
 
   async effect(event: LevelEvent): Promise<void> {

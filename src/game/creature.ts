@@ -6,10 +6,12 @@ export type Board = Array<Array<Creature | null>>;
 export interface LocatedCreature { position: Position; creature: Creature }
 export interface Movement { creature: Creature; from: Position | null; to: Position }
 export interface Reaction { prey: LocatedCreature; predators: LocatedCreature[] }
+export interface MeldActivation { level: Level; center: LocatedCreature; matched: LocatedCreature[] }
 export interface ReactionWave {
   before: Board;
   after: Board;
   reactions: Reaction[];
+  melds: MeldActivation[];
   removed: LocatedCreature[];
   creations: LocatedCreature[];
   explosionCells: Position[];

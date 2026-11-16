@@ -1,46 +1,26 @@
-import type { Board, CreatureFactory, Level, LocatedCreature, Position, Reaction, ReactionWave } from './creature.ts';
-import { BOARD_SIZE, cloneBoard, inBounds, predatorPositions } from './board.ts';
+import type { Board, CreatureFactory, Level, LocatedCreature, Position, ReactionWave } from './creature.ts';
+import { BOARD_SIZE, cloneBoard } from './board.ts';
+import { selectActivations } from './activation-selection.ts';
 
-export function resolveWave(board: Board, candidates: readonly Position[], createCreature: CreatureFactory): ReactionWave | null {
+export function resolveWave(
+  board: Board,
+  candidates: readonly Position[],
+  createCreature: CreatureFactory,
+  activationCandidates: readonly Position[] = candidates,
+): ReactionWave | null {
   const before = cloneBoard(board);
-  const reactions: Reaction[] = [];
-  const seen = new Set<string>();
-  for (const position of candidates) {
-    if (!inBounds(position)) continue;
-    const creature = before[position.row][position.col];
-    if (!creature || seen.has(creature.id)) continue;
-    seen.add(creature.id);
-    const predators = predatorPositions(before, position);
-    if (predators.length >= 3) reactions.push({
-      prey: { position: { ...position }, creature },
-      predators: predators.map(predator => ({ position: predator, creature: before[predator.row][predator.col]! })),
-    });
-  }
-  if (!reactions.length) return null;
-  const isApexReaction = (reaction: Reaction): boolean => {
-    if (reaction.predators.length < 4 || reaction.predators.some(predator => predator.creature.level !== 4)) return false;
-    const predatorPositions = new Set(reaction.predators.map(predator => `${predator.position.row},${predator.position.col}`));
-    const formations = [
-      [
-        { row: reaction.prey.position.row - 1, col: reaction.prey.position.col },
-        { row: reaction.prey.position.row, col: reaction.prey.position.col + 1 },
-        { row: reaction.prey.position.row + 1, col: reaction.prey.position.col },
-        { row: reaction.prey.position.row, col: reaction.prey.position.col - 1 },
-      ],
-      [
-        { row: reaction.prey.position.row - 1, col: reaction.prey.position.col - 1 },
-        { row: reaction.prey.position.row - 1, col: reaction.prey.position.col + 1 },
-        { row: reaction.prey.position.row + 1, col: reaction.prey.position.col - 1 },
-        { row: reaction.prey.position.row + 1, col: reaction.prey.position.col + 1 },
-      ],
-    ];
-    return formations.some(formation => formation.every(position => predatorPositions.has(`${position.row},${position.col}`)));
-  };
-  const apex = reactions.some(isApexReaction);
-  const creations: LocatedCreature[] = apex ? [] : reactions.map(reaction => ({
-    position: { ...reaction.prey.position },
-    creature: createCreature(Math.min(reaction.prey.creature.level + (reaction.predators.length === 3 ? 1 : 2), 4) as Level),
-  }));
+  const { reactions, melds, apex } = selectActivations(before, candidates, activationCandidates);
+  if (!reactions.length && !melds.length) return null;
+  const creations: LocatedCreature[] = apex ? [] : [
+    ...reactions.map(reaction => ({
+      position: { ...reaction.prey.position },
+      creature: createCreature(Math.min(reaction.prey.creature.level + (reaction.predators.length === 3 ? 1 : 2), 4) as Level),
+    })),
+    ...melds.map(meld => ({
+      position: { ...meld.center.position },
+      creature: createCreature((meld.level + 1) as Level),
+    })),
+  ];
   const protectedCells = new Set(creations.map(creation => `${creation.position.row},${creation.position.col}`));
   const removed = new Map<string, LocatedCreature>();
   const explosions = new Map<string, Position>();
@@ -68,9 +48,14 @@ export function resolveWave(board: Board, candidates: readonly Position[], creat
         addRemoval({ row, col });
       }
     }
+    for (const meld of melds) for (const item of meld.matched) {
+      if (item.position.row === meld.center.position.row && item.position.col === meld.center.position.col) continue;
+      explosions.set(`${item.position.row},${item.position.col}`, { ...item.position });
+      addRemoval(item.position);
+    }
   }
   const after = cloneBoard(before);
   for (const item of removed.values()) after[item.position.row][item.position.col] = null;
   for (const creation of creations) after[creation.position.row][creation.position.col] = { ...creation.creature };
-  return { before, after, reactions, removed: [...removed.values()], creations, explosionCells: [...explosions.values()], apex };
+  return { before, after, reactions, melds, removed: [...removed.values()], creations, explosionCells: [...explosions.values()], apex };
 }
