@@ -9,7 +9,16 @@ npm ci
 npx playwright install chromium
 ```
 
-The editable [SVG master](../../docs/art/paramecium-concept.svg) and [resting preview](../../docs/art/paramecium-resting-preview.html) are the appearance reference. Generated runtime assets and their reproducible offline export procedure will be added during implementation; ordinary builds must use bundled assets and must not require the exporter.
+The editable [SVG master](../../docs/art/paramecium-concept.svg) and [resting preview](../../docs/art/paramecium-resting-preview.html) are the appearance reference. Generated runtime assets are bundled under `src/assets/paramecium/`; ordinary builds do not run the exporter.
+
+To reproduce the generated transparent layers and inverse variants offline, install project dependencies and Playwright Chromium once, then run:
+
+```powershell
+npx playwright install chromium
+node scripts/generate-paramecium-assets.mjs
+```
+
+The exporter uses the approved preview, retains the SVG master as editable source, emits 32 longer cilia stems and a 32-frame cilia sequence at 30 degrees, and scales the eye 1.5x with proportional pupil movement. It hashes both source references in the manifest, removes obsolete generated cilia frames, and has been verified byte-for-byte reproducible. Asset validation is covered by `tests/e2e/paramecium-assets.spec.ts`.
 
 ## Automated Validation
 
@@ -22,13 +31,15 @@ npm run test:e2e -- --workers=2
 npm run build
 ```
 
-The focused checks must cover independent ripple/rotation/blink/gaze/drift, all eight gaze directions and eye bounds, frame/alpha correctness, reduced motion and unavailable-art fallback. Exercise surviving IDs through selection, redraw, flashes, swaps, falling and refill; test new IDs, removal, successful and failed reset, cancelled/error rollback, and stale callbacks. Verify visual state does not consume gameplay random draws and that gameplay results match the existing rules. Compare desktop and mobile screenshots at real board-cell sizes, including rotation extrema and board edges.
+The focused checks must cover independent ripple, 12-24-degree body rotation with a level eye, blinking, gaze and internal drift; all eight gaze directions and eye bounds; frame/alpha correctness; reduced motion; and unavailable-art fallback. Exercise surviving IDs through selection, redraw, flashes, swaps, falling and refill; test new IDs, removal, successful and failed reset, cancelled/error rollback, and stale callbacks. Verify visual state does not consume gameplay random draws and that gameplay results match the existing rules. Compare desktop and mobile screenshots at real board-cell sizes, including rotation extrema and board edges.
 
 ## Performance Validation
 
 Construct a **test-only** board of 64 level-0 creatures without changing production board generation. Warm up, then collect all foreground frame intervals for at least 30 seconds; exercise selection, dragging and effects in appropriate measured scenarios. Record the sample count, fraction at or below 33.4 ms, p95/p99, longest intervals, responsiveness, browser, viewport, DPR, device, renderer and power conditions. The acceptance criterion is at least 95% at or below 33.4 ms for each tested representative desktop and mobile configuration. Do not clamp intervals or remove long stalls from the result.
 
 Repeat on representative physical desktop and mobile devices. The configured mobile browser project is Chromium emulation, not physical-device performance evidence. Record any unavailable physical-device coverage and do not claim the performance target is met until measured.
+
+See [validation.md](validation.md) for the recorded baseline, exact results, measured frame intervals and current performance shortfall. The current 64-creature emulation results do not meet the 95% target; physical-device measurements remain outstanding.
 
 ## Manual Validation
 

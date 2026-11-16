@@ -35,6 +35,10 @@ export async function startWithLevels(page: Page, levels: number[], draws: numbe
     let refillIndex = -1;
     let state = resetSeed ?? 123;
     (window as unknown as { armRefill: () => void }).armRefill = () => { refillIndex = 0; };
+    (window as unknown as { disarmRefill: () => void }).disarmRefill = () => { refillIndex = -1; };
+    document.addEventListener('click', event => {
+      if ((event.target as Element | null)?.closest('#reset')) (window as unknown as { disarmRefill: () => void }).disarmRefill();
+    }, true);
     Math.random = () => {
       if (index < initialLevels.length) return values[initialLevels[index++]];
       if (refillIndex >= 0 && refillIndex < refillDraws.length) return refillDraws[refillIndex++];
@@ -43,13 +47,13 @@ export async function startWithLevels(page: Page, levels: number[], draws: numbe
       value = Math.imul(value ^ (value >>> 15), value | 1);
       value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
       const random = ((value ^ (value >>> 14)) >>> 0) / 4294967296;
-      return resetSeed === undefined ? random * .39 : random;
+      return random;
     };
   }, { initialLevels: levels, refillDraws: draws, resetSeed });
   await page.goto('/');
   await expect(page.getByRole('status')).toHaveText('Choose two neighboring creatures.');
   await expect.poll(() => readLevels(page)).toEqual(levels);
-  if (draws.length) await page.evaluate(async () => {
+  await page.evaluate(async () => {
     const viewPath = '/src/view/board-view.ts';
     const { BoardView } = await import(viewPath);
     const original = BoardView.prototype.effect;

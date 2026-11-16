@@ -60,6 +60,7 @@ As a player on desktop or mobile, I want the board to remain responsive when man
 ### Edge Cases
 
 - The approved reference has one round white eye, a black pupil, a black outline, cilia, and internal details; pupil glances may approach but must not cross the inside of the eye outline. The upper and lower eyelids move over the eye instead of flattening the eyeball.
+- Resting body rotation alternates between 12- and 24-degree targets around the creature center. The eye follows the body's position but remains upright, with horizontal eyelids.
 - Pupil glances include all eight neighboring directions, return to center, and spend less time looking away than in the centered pause. Individual blink and gaze schedules are independent.
 - A redraw, selection change, hint phase, cancelled gesture, or effect must not reset a surviving creature's resting phase. Identity follows the creature rather than the cell; replacement creatures begin with their own state.
 - Animation is presentation only: it must not consume the random sequence that determines generation, refill, or other gameplay outcomes.
@@ -74,8 +75,8 @@ As a player on desktop or mobile, I want the board to remain responsive when man
 
 - **FR-001**: Every visible level-0 creature MUST use the approved paramecium character instead of displaying the number 0; existing cell background colors MUST remain.
 - **FR-002**: Levels 1 through 4 MUST retain their existing numbered placeholder appearance and cell colors.
-- **FR-003**: The level-0 resting appearance MUST match the approved [character concept](../../docs/art/paramecium-concept.svg) and [resting preview](../../docs/art/paramecium-resting-preview.html), including cilia ripple, gentle alternating rotation, eyelid blinking, pupil glances, and small internal drift.
-- **FR-004**: Eyelids MUST cover the eye from the top and bottom without deforming the eyeball; the pupil MUST look briefly in each of eight possible directions, remain inside the eye outline, and return to center between glances.
+- **FR-003**: The level-0 resting appearance MUST match the approved [character concept](../../docs/art/paramecium-concept.svg) and [resting preview](../../docs/art/paramecium-resting-preview.html), including cilia ripple, alternating 12-24 degree body rotation, eyelid blinking, pupil glances, and small internal drift.
+- **FR-004**: Eyelids MUST cover the eye from the top and bottom without deforming the eyeball; the eye and eyelids MUST remain upright and horizontal while the body rotates; the pupil MUST look briefly in each of eight possible directions, remain inside the eye outline, and return to center between glances.
 - **FR-005**: Each creature's resting motion MUST have independently varied timing and phase; different creatures MAY occasionally coincide but MUST NOT be driven by one synchronized animation cycle.
 - **FR-006**: Each surviving creature MUST retain its individual resting-animation state across swaps, falling, selection changes, redraws, hint flashes, and other visual updates. New or replacement creature identities MUST receive their own state.
 - **FR-007**: Only the creature artwork may rotate; the cell background, selection indicator, and pointer target MUST remain fixed and usable for mouse and touch input.

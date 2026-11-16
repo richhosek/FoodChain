@@ -38,8 +38,11 @@ test('mouse and touch taps produce identical board pixels and score', async ({ p
   const levels = cascadeLevels();
   const outcomes = [];
   for (const touch of [false, true]) {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await startWithLevels(page, levels, [.2, .2, .2], 10);
     await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator('canvas')).toHaveAttribute('aria-label', /animated paramecia/);
+    await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
     await swap(page, { row: 3, col: 3 }, { row: 3, col: 4 }, touch);
     await expect(page.getByTestId('turns')).toHaveText('1');
     await expect(page.getByRole('status')).toHaveText('Choose two neighboring creatures.');

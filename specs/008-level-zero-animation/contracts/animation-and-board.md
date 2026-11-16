@@ -3,7 +3,7 @@
 ## Appearance and Motion
 
 - Each visible level-0 creature uses the approved one-eyed paramecium, not the number 0, on its existing colored cell. Levels 1-4 retain their numbers and colors. If required artwork cannot load, show the existing colored `0` placeholder and keep the board playable.
-- Cilia ripple around the outline; the creature gently rotates clockwise and counterclockwise; upper and lower lids blink over a round eye; the pupil briefly glances in eight possible directions and returns to center; internal shapes drift slightly within their original areas. See [the data model](../data-model.md) for reference ranges.
+- Cilia ripple around the outline; the body rocks clockwise and counterclockwise between 12- and 24-degree targets; the enlarged eye follows the body while remaining upright with horizontal eyelids; the pupil briefly glances in eight possible directions and returns to center; internal shapes drift slightly within their original areas. See [the data model](../data-model.md) for reference ranges.
 - Each creature's motions have independent visual phases and schedules. Accidental simultaneous actions are allowed. Animation must not draw from, mutate, or reseed gameplay randomness.
 - The artwork stays within its cell during resting rotation and does not overlap adjacent cells or clip at board edges. Only artwork rotates: tile background, selection border and pointer target remain fixed.
 

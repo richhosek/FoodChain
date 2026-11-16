@@ -16,10 +16,10 @@
 
 - `key`: view-owned board-generation token plus creature ID. Store only view data; independent state is created for each new level-0 identity.
 - `elapsed` and per-creature visual RNG state; independent seeds/phases for cilia, rotation, eye blinking, pupil glances and each internal detail. Never use the gameplay random source or global `Math.random`.
-- `cilia`: wave phase and period; preview reference is approximately 1.45-1.85 seconds and a small alternating cilia swing. A shared frame sequence is indexed independently for each creature.
-- `rotation`: current/previous/target angle and timing, easing between alternating directions; preview reference uses approximately 4-8 degrees and 3-5 second intervals.
+- `cilia`: wave phase and period; preview reference is approximately 1.45-1.85 seconds with a 30-degree swing. A shared frame sequence is indexed independently for each creature.
+- `rotation`: current/previous/target angle and timing, easing between alternating directions; resting targets alternate between 12 and 24 degrees in each direction every 3-5 seconds. The body and internal details rotate together; the eye follows the body's position but counter-rotates to keep the eye and eyelids horizontal.
 - `blink`: independent next-blink time and closure progress. Upper and lower lids close over the unchanged eye and reopen; the preview blink is approximately 0.22 seconds.
-- `gaze`: centered wait, one of eight directions, short outward transition, directional hold and return. The preview waits 2.5-5 seconds centered, holds a direction 0.35-0.65 seconds, and flicks each way over 0.1 seconds. With eye radius 65, outline width 12, pupil radius 18 and gaze radius 39 in the 768-unit source, the pupil retains a 2-unit inner-outline gap.
+- `gaze`: centered wait, one of eight directions, short outward transition, directional hold and return. The preview waits 2.5-5 seconds centered, holds a direction 0.35-0.65 seconds, and flicks each way over 0.1 seconds. The eye is scaled 1.5x with its pupil and eyelids; gaze offsets scale with it to retain the original relative range and inside-outline clearance.
 - `internalDetails`: independent small offsets and phases within the original neighborhood; the preview uses horizontal amplitudes of 3-5 source units and smaller vertical movement.
 - `motionPreference`: normal or reduced. Reduced motion freezes resting state but leaves a recognizable neutral appearance and required gameplay feedback; preference changes are handled during a session.
 

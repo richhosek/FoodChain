@@ -139,6 +139,7 @@ async function move(first: Position, second: Position): Promise<void> {
 	pausedIdleRemaining = null;
 	cancelIdleHint();
 	const epoch = level.state.epoch;
+	view.beginMove();
 	try {
 		const pending = level.move(first, second, async (event: LevelEvent) => {
 			if (level.state.epoch !== epoch || event.signal.aborted) return;
@@ -149,11 +150,14 @@ async function move(first: Position, second: Position): Promise<void> {
 		view.render(level.state.board);
 		const accepted = await pending;
 		if (level.state.epoch !== epoch || resetting) return;
+		if (accepted) view.commitMove(level.state.board);
+		else view.rollbackMove();
 		view.render(level.state.board);
 		publish(level.state, accepted ? undefined : 'That move is unavailable. Try another pair.');
 		if (accepted) showWinAfterRender(level.state);
 		if (level.state.status === 'ready') scheduleIdleHint(epoch, accepted ? IDLE_HINT_DELAY_MS : remainingIdle ?? IDLE_HINT_DELAY_MS);
 	} catch (error) {
+		view.rollbackMove();
 		if (level.state.epoch !== epoch || resetting) return;
 		console.error(error);
 		publish(level.state, 'The move could not be completed. Try again.');
@@ -163,24 +167,28 @@ async function move(first: Position, second: Position): Promise<void> {
 }
 
 resetButton.addEventListener('click', async () => {
+	if (resetting) return;
 	resetting = true;
 	pausedIdleRemaining = null;
 	cancelIdleHint();
 	if (failureDialog.open) failureDialog.close();
 	if (winDialog.open) winDialog.close();
 	view.clearSelection();
+	view.beginReset();
 	const pending = level.reset();
 	const epoch = level.state.epoch;
 	publish(level.state, 'Preparing a new board...');
 	try {
 		await pending;
-		if (level.state.epoch !== epoch) return;
+		if (level.state.epoch !== epoch) { view.resetFailed(); return; }
+		view.resetSucceeded();
 		resetting = false;
 		failureDialogEpoch = null;
 		view.render(level.state.board);
 		publish(level.state);
 		scheduleIdleHint(epoch);
 	} catch (error) {
+		view.resetFailed();
 		if (level.state.epoch !== epoch) return;
 		resetting = false;
 		view.render(level.state.board);
@@ -210,6 +218,7 @@ try {
 
 window.addEventListener('pagehide', () => {
 	disposed = true;
+	view?.destroy();
 	pausedIdleRemaining = null;
 	cancelIdleHint();
 }, { once: true });

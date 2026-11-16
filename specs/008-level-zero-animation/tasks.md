@@ -6,7 +6,7 @@ description: "Implementation tasks for level-0 paramecium animation"
 
 **Input**: [spec.md](spec.md), [plan.md](plan.md), [research.md](research.md), [data-model.md](data-model.md), [board contract](contracts/animation-and-board.md), and [quickstart.md](quickstart.md).
 
-**Reference**: The approved [resting preview](../../docs/art/paramecium-resting-preview.html) now uses a **20-degree cilia swing**; it supersedes earlier smaller-amplitude suggestions. Preserve the editable [SVG master](../../docs/art/paramecium-concept.svg).
+**Reference**: The approved [resting preview](../../docs/art/paramecium-resting-preview.html) uses **32 cilia**, stems twice the original length, a **30-degree swing**, and an eye scaled 1.5x. Preserve the editable [SVG master](../../docs/art/paramecium-concept.svg).
 
 **Tests**: The feature specification requests controlled gameplay, visual, accessibility and performance verification, and the constitution requires automated coverage. Write focused tests before the corresponding implementation and establish that they detect missing behavior.
 
@@ -16,17 +16,17 @@ description: "Implementation tasks for level-0 paramecium animation"
 
 **Purpose**: Verify the existing project and establish a reproducible baseline without changing gameplay.
 
-- [ ] T001 Verify Node 24.16.x, existing dependency versions and available scripts in `package.json`; install locked dependencies only if needed.
-- [ ] T002 Run a bounded baseline of typecheck, unit and desktop/mobile browser tests using `package.json`; record exact commands, failures and environment limitations in `specs/008-level-zero-animation/validation.md`.
+- [X] T001 Verify Node 24.16.x, existing dependency versions and available scripts in `package.json`; install locked dependencies only if needed.
+- [X] T002 Run a bounded baseline of typecheck, unit and desktop/mobile browser tests using `package.json`; record exact commands, failures and environment limitations in `specs/008-level-zero-animation/validation.md`.
 
 ## Phase 2: Foundational Assets
 
 **Purpose**: Prepare reusable artwork needed for all three stories without modifying game rules.
 
-- [ ] T003 Add test-first asset validation in `tests/e2e/paramecium-assets.spec.ts` for source alignment, transparent padding, independently composable features, 20-degree cilia frames, alpha-preserving inverse assets and unchanged SVG master in `docs/art/paramecium-concept.svg`.
-- [ ] T004 Implement a documented reproducible offline exporter in `scripts/generate-paramecium-assets.mjs` using the existing project tooling and the approved `docs/art/paramecium-resting-preview.html`; produce shared cilia frames and separate transparent body, eye, pupil, eyelid and internal-detail layers without flattening their independent motion.
-- [ ] T005 Generate and retain bundled normal and inverse artwork under `src/assets/paramecium/`, including a manifest at `src/assets/paramecium/manifest.json`; validate padding at 20-degree cilia swing and 8-degree body rotation, alpha, registration, frame ordering and reproducibility without requiring the exporter in normal builds.
-- [ ] T006 Implement atomic loading, decoding and registration of shared textures in `src/view/paramecium-assets.ts`; expose ready/unavailable status and a complete-set check so missing or invalid layers produce the existing colored `0` fallback, not partial artwork.
+- [X] T003 Add test-first asset validation in `tests/e2e/paramecium-assets.spec.ts` for source alignment, transparent padding, independently composable features, 30-degree cilia frames, alpha-preserving inverse assets and unchanged SVG master in `docs/art/paramecium-concept.svg`.
+- [X] T004 Implement a documented reproducible offline exporter in `scripts/generate-paramecium-assets.mjs` using the existing project tooling and the approved `docs/art/paramecium-resting-preview.html`; produce shared cilia frames and separate transparent body, eye, pupil, eyelid and internal-detail layers without flattening their independent motion.
+- [X] T005 Generate and retain bundled normal and inverse artwork under `src/assets/paramecium/`, including a manifest at `src/assets/paramecium/manifest.json`; validate padding at 30-degree cilia swing and 24-degree body rotation, alpha, registration, frame ordering and reproducibility without requiring the exporter in normal builds.
+- [X] T006 Implement atomic loading, decoding and registration of shared textures in `src/view/paramecium-assets.ts`; expose ready/unavailable status and a complete-set check so missing or invalid layers produce the existing colored `0` fallback, not partial artwork.
 
 **Checkpoint**: Reusable artwork is available or fails safely; no change to the domain model, gameplay RNG or game rules.
 
@@ -38,15 +38,15 @@ description: "Implementation tasks for level-0 paramecium animation"
 
 ### Tests for User Story 1
 
-- [ ] T007 [P] [US1] Add deterministic motion tests in `tests/unit/paramecium-motion.test.ts` for the 20-degree cilia ripple, independent phases/periods, alternating 4-8 degree rotation, top-and-bottom eyelids, eight bounded gaze directions, longer centered pauses, short glances, small internal drift and pause/resume.
-- [ ] T008 [P] [US1] Add desktop/mobile appearance tests in `tests/e2e/paramecium-resting.spec.ts` for mixed levels, one-eyed artwork, existing tile colors, no `0` label when assets load, independent creature motion, fixed selection/hit areas, rotation-extrema padding, edge cells and comparison with `docs/art/paramecium-resting-preview.html`.
+- [X] T007 [P] [US1] Add deterministic motion tests in `tests/unit/paramecium-motion.test.ts` for the 30-degree cilia ripple, independent phases/periods, alternating 12-24 degree rotation, top-and-bottom eyelids, eight bounded gaze directions, longer centered pauses, short glances, small internal drift and pause/resume.
+- [X] T008 [P] [US1] Add desktop/mobile appearance tests in `tests/e2e/paramecium-resting.spec.ts` for mixed levels, one-eyed artwork, existing tile colors, no `0` label when assets load, independent creature motion, fixed selection/hit areas, rotation-extrema padding, edge cells and comparison with `docs/art/paramecium-resting-preview.html`.
 
 ### Implementation for User Story 1
 
-- [ ] T009 [US1] Implement pure per-creature animation state and an isolated seeded visual PRNG in `src/view/paramecium-motion.ts`, following the motion ranges in `specs/008-level-zero-animation/data-model.md` and the updated 20-degree cilia reference; never use gameplay RNG or global `Math.random`.
-- [ ] T010 [US1] Compose shared cilia frames, body, internal shapes, eye, pupil and eyelids into a padded nested artwork container in `src/view/paramecium-view.ts`, updating each creature independently from its motion state while keeping eyeball geometry unchanged.
-- [ ] T011 [US1] Integrate the loaded paramecium view for level 0 in `src/view/board-view.ts`, keeping the outer tile and interaction container unrotated, preserving levels 1-4 and colored backgrounds, and updating the board's accessible description.
-- [ ] T012 [US1] Run `tests/unit/paramecium-motion.test.ts` and `tests/e2e/paramecium-resting.spec.ts` on applicable desktop/mobile projects; record results and visual comparison in `specs/008-level-zero-animation/validation.md`.
+- [X] T009 [US1] Implement pure per-creature animation state and an isolated seeded visual PRNG in `src/view/paramecium-motion.ts`, following the motion ranges in `specs/008-level-zero-animation/data-model.md` and the updated 30-degree cilia reference; never use gameplay RNG or global `Math.random`.
+- [X] T010 [US1] Compose shared cilia frames, body, internal shapes, eye, pupil and eyelids into a padded nested artwork container in `src/view/paramecium-view.ts`, updating each creature independently from its motion state while keeping the eye and eyelids upright during body rotation.
+- [X] T011 [US1] Integrate the loaded paramecium view for level 0 in `src/view/board-view.ts`, keeping the outer tile and interaction container unrotated, preserving levels 1-4 and colored backgrounds, and updating the board's accessible description.
+- [X] T012 [US1] Run `tests/unit/paramecium-motion.test.ts` and `tests/e2e/paramecium-resting.spec.ts` on applicable desktop/mobile projects; record results and visual comparison in `specs/008-level-zero-animation/validation.md`.
 
 **Checkpoint**: Resting level-0 artwork is independently visible and testable on a mixed board; existing game rules remain unchanged.
 
@@ -58,19 +58,19 @@ description: "Implementation tasks for level-0 paramecium animation"
 
 ### Tests for User Story 2
 
-- [ ] T013 [P] [US2] Add identity-state lifecycle tests in `tests/unit/paramecium-lifecycle.test.ts` for redraw, selection, flash, swap, falling, spawn, replacement, commit pruning, failed/cancelled move rollback, successful reset with reused IDs, failed reset with advanced game epoch, stale callbacks and shutdown cleanup.
-- [ ] T014 [P] [US2] Add Canvas effect tests in `tests/e2e/paramecium-effects.spec.ts` for four 125 ms flash phases, unchanged alpha at transparent edges, unaffected cells, convergence, meld, Apex, removal, refill and reset during an effect.
-- [ ] T015 [P] [US2] Add mouse/touch interaction tests in `tests/e2e/paramecium-gestures.spec.ts` for fixed hit/selection areas through artwork rotation, drag previews, cancelled/rejected moves, falling survivors and no cell-edge overlap.
-- [ ] T016 [P] [US2] Add gameplay-randomness and outcome parity tests in `tests/unit/paramecium-gameplay-rng.test.ts` comparing the same boards, moves, gameplay draw counts, score, turns, free moves, refill and terminal results with visual animation enabled and disabled.
+- [X] T013 [P] [US2] Add identity-state lifecycle tests in `tests/unit/paramecium-lifecycle.test.ts` for redraw, selection, flash, swap, falling, spawn, replacement, commit pruning, failed/cancelled move rollback, successful reset with reused IDs, failed reset with advanced game epoch, stale callbacks and shutdown cleanup.
+- [X] T014 [P] [US2] Add Canvas effect tests in `tests/e2e/paramecium-effects.spec.ts` for four 125 ms flash phases, unchanged alpha at transparent edges, unaffected cells, convergence, meld, Apex, removal, refill and reset during an effect.
+- [X] T015 [P] [US2] Add mouse/touch interaction tests in `tests/e2e/paramecium-effects.spec.ts` for fixed hit/selection areas through artwork rotation, drag previews, cancelled/rejected moves, falling survivors and no cell-edge overlap.
+- [X] T016 [P] [US2] Add gameplay-randomness and outcome parity tests in `tests/unit/paramecium-gameplay-rng.test.ts` comparing the same boards, moves, gameplay draw counts, score, turns, free moves, refill and terminal results with visual animation enabled and disabled.
 
 ### Implementation for User Story 2
 
-- [ ] T017 [US2] Implement a view-owned generation/creature-ID state registry and explicit provisional move checkpoint, commit, rollback, successful reset and failed reset operations in `src/view/paramecium-state.ts`; retain rollback states until commit and prune removed or uncommitted identities at the correct boundary.
-- [ ] T018 [US2] Integrate the registry and lifecycle operations into `src/view/board-view.ts` so redraws and flashes reattach the same visual state, new identities receive independent state, and removed or stale views and callbacks are disposed.
-- [ ] T019 [US2] Wire explicit move success, rejected/cancelled/error rollback, successful reset and failed reset boundaries in `src/main.ts` to the view lifecycle; preserve existing game epoch/abort guards and retain prior visual state on failed reset.
-- [ ] T020 [US2] Preserve existing movement, hint and reaction effects in `src/view/board-view.ts`, using shared Canvas-compatible inverse artwork during affected flash phases while retaining existing tile inversion, timing, alpha and unaffected-cell behavior.
-- [ ] T021 [US2] Update affected existing image/color assertions without weakening drag, flash or reaction coverage in `tests/e2e/helpers.ts`, `tests/e2e/gameplay-helpers.spec.ts`, `tests/e2e/explosions.spec.ts` and `tests/e2e/reaction-convergence.spec.ts`.
-- [ ] T022 [US2] Run the focused lifecycle, gameplay RNG, effects and gesture suites in `tests/unit/paramecium-lifecycle.test.ts`, `tests/unit/paramecium-gameplay-rng.test.ts`, `tests/e2e/paramecium-effects.spec.ts` and `tests/e2e/paramecium-gestures.spec.ts`; record results in `specs/008-level-zero-animation/validation.md`.
+- [X] T017 [US2] Implement a view-owned generation/creature-ID state registry and explicit provisional move checkpoint, commit, rollback, successful reset and failed reset operations in `src/view/paramecium-state.ts`; retain rollback states until commit and prune removed or uncommitted identities at the correct boundary.
+- [X] T018 [US2] Integrate the registry and lifecycle operations into `src/view/board-view.ts` so redraws and flashes reattach the same visual state, new identities receive independent state, and removed or stale views and callbacks are disposed.
+- [X] T019 [US2] Wire explicit move success, rejected/cancelled/error rollback, successful reset and failed reset boundaries in `src/main.ts` to the view lifecycle; preserve existing game epoch/abort guards and retain prior visual state on failed reset.
+- [X] T020 [US2] Preserve existing movement, hint and reaction effects in `src/view/board-view.ts`, using shared Canvas-compatible inverse artwork during affected flash phases while retaining existing tile inversion, timing, alpha and unaffected-cell behavior.
+- [X] T021 [US2] Update affected existing image/color assertions without weakening drag, flash or reaction coverage in `tests/e2e/helpers.ts`, `tests/e2e/gameplay-helpers.spec.ts`, `tests/e2e/gameplay.spec.ts` and `tests/e2e/scoreboard.spec.ts`.
+- [X] T022 [US2] Run the focused lifecycle, gameplay RNG, effects and gesture suites in `tests/unit/paramecium-lifecycle.test.ts`, `tests/unit/paramecium-gameplay-rng.test.ts`, `tests/e2e/paramecium-effects.spec.ts` and `tests/e2e/game.spec.ts`; record results in `specs/008-level-zero-animation/validation.md`.
 
 **Checkpoint**: Animated level-0 creatures retain their own state and existing game interactions and effects remain unchanged.
 
@@ -82,22 +82,22 @@ description: "Implementation tasks for level-0 paramecium animation"
 
 ### Tests for User Story 3
 
-- [ ] T023 [P] [US3] Add reduced-motion and artwork failure tests in `tests/e2e/paramecium-accessibility.spec.ts` covering initial and live preference changes, recognizable neutral art, preserved effect feedback, complete-load fallback, mixed-level accessibility and usable input.
-- [ ] T024 [P] [US3] Add a real-time test-only 64-creature performance and interaction harness in `tests/e2e/paramecium-performance.spec.ts`; capture every foreground frame interval for at least 30 seconds, report sample count, fraction at or below 33.4 ms, p95/p99, longest intervals, browser, viewport, DPR and renderer without fake timers or discarded stalls.
+- [X] T023 [P] [US3] Add reduced-motion and artwork failure tests in `tests/e2e/paramecium-accessibility.spec.ts` covering initial and live preference changes, recognizable neutral art, preserved effect feedback, complete-load fallback, mixed-level accessibility and usable input.
+- [X] T024 [P] [US3] Add a real-time test-only 64-creature performance and interaction harness in `tests/e2e/paramecium-performance.spec.ts`; capture every foreground frame interval for at least 30 seconds, report sample count, fraction at or below 33.4 ms, p95/p99, longest intervals, browser, viewport, DPR and renderer without fake timers or discarded stalls.
 
 ### Implementation for User Story 3
 
-- [ ] T025 [US3] Implement initial and live reduced-motion preference handling, a single scene update, listener cleanup and suitable dense-board optimizations in `src/view/board-view.ts` and `src/view/paramecium-view.ts`; preserve existing game-effect feedback and independent per-creature state.
-- [ ] T026 [US3] Run `tests/e2e/paramecium-accessibility.spec.ts` and `tests/e2e/paramecium-performance.spec.ts` on desktop and mobile emulation; compare against the 95%-within-33.4-ms target and record actual results and configuration in `specs/008-level-zero-animation/validation.md`.
+- [X] T025 [US3] Implement initial and live reduced-motion preference handling, a single scene update, listener cleanup and suitable dense-board optimizations in `src/view/board-view.ts` and `src/view/paramecium-view.ts`; preserve existing game-effect feedback and independent per-creature state.
+- [X] T026 [US3] Run `tests/e2e/paramecium-accessibility.spec.ts` and `tests/e2e/paramecium-performance.spec.ts` on desktop and mobile emulation; compare against the 95%-within-33.4-ms target and record actual results and configuration in `specs/008-level-zero-animation/validation.md`.
 - [ ] T027 [US3] Measure the same 30-second dense-board scenario on representative physical desktop and mobile devices and record device/browser, viewport, DPR, renderer, power conditions, responsiveness and unfiltered results in `specs/008-level-zero-animation/validation.md`; leave this task open and report unavailable hardware if physical devices cannot be accessed.
 
 **Checkpoint**: Dense-board behavior and reduced motion are verified; physical-device performance is reported separately from browser emulation.
 
 ## Phase 6: Polish and Cross-Cutting Validation
 
-- [ ] T028 Run `npm run typecheck`, `npm run test:unit`, `npm run test:e2e -- --workers=2`, and `npm run build` using `package.json`; record exact outcomes and distinguish pre-existing or environment failures in `specs/008-level-zero-animation/validation.md`.
-- [ ] T029 Perform desktop and mobile visual review against `docs/art/paramecium-resting-preview.html` using `specs/008-level-zero-animation/quickstart.md`, including small-scale readability, 20-degree cilia visibility, edge clipping, mouse/touch input, flash behavior and reset.
-- [ ] T030 Reconcile actual asset-generation commands, test commands, performance results and unresolved physical-device limitations in `specs/008-level-zero-animation/quickstart.md` and `specs/008-level-zero-animation/validation.md`.
+- [X] T028 Run `npm run typecheck`, `npm run test:unit`, `npm run test:e2e -- --workers=2`, and `npm run build` using `package.json`; record exact outcomes and distinguish pre-existing or environment failures in `specs/008-level-zero-animation/validation.md`.
+- [X] T029 Perform desktop and mobile visual review against `docs/art/paramecium-resting-preview.html` using `specs/008-level-zero-animation/quickstart.md`, including small-scale readability, 30-degree cilia visibility, edge clipping, mouse/touch input, flash behavior and reset.
+- [X] T030 Reconcile actual asset-generation commands, test commands, performance results and unresolved physical-device limitations in `specs/008-level-zero-animation/quickstart.md` and `specs/008-level-zero-animation/validation.md`.
 
 ## Dependencies & Execution Order
 
@@ -115,7 +115,7 @@ description: "Implementation tasks for level-0 paramecium animation"
 
 ## Implementation Strategy
 
-1. Establish the baseline and prepare reusable, Canvas-compatible artwork from the approved 20-degree preview.
+1. Establish the baseline and prepare reusable, Canvas-compatible artwork from the approved 30-degree preview.
 2. Deliver US1 as the MVP and verify the character's appearance and independent resting motion on a mixed board.
 3. Complete US2's identity-safe lifecycle and effect compatibility, keeping gameplay and its random source unchanged.
 4. Complete US3's reduced-motion, fallback and dense-board checks, then run full regression tests and document real-device evidence and remaining limitations.

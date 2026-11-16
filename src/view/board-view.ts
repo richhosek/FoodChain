@@ -2,6 +2,9 @@ import Phaser from 'phaser';
 import { BOARD_SIZE } from '../game/index.ts';
 import type { Board, Creature, LevelEvent, Position } from '../game/index.ts';
 import { flashCells } from './effects.ts';
+import { registerParameciumAssets } from './paramecium-assets.ts';
+import { createParameciumArtwork } from './paramecium-view.ts';
+import { ParameciumStateRegistry } from './paramecium-state.ts';
 
 const SIZE = 800;
 const CELL = SIZE / BOARD_SIZE;
@@ -20,6 +23,10 @@ type Gesture = {
   offsetY: number;
   dragging: boolean;
   preview: Position | null;
+};
+
+type ParameciumViewEntry = {
+  advance: (deltaSeconds: number, reducedMotion: boolean) => void;
 };
 
 function same(first: Position, second: Position): boolean {
@@ -46,6 +53,15 @@ export class BoardView {
   private board: Board;
   private gesture: Gesture | null = null;
   private cells = new Map<string, Phaser.GameObjects.Container>();
+  private paramecia = new Map<string, ParameciumViewEntry>();
+  private invertedCells = new Set<string>();
+  private readonly parameciumStates = new ParameciumStateRegistry();
+  private assetStatus: 'loading' | 'ready' | 'unavailable' = 'loading';
+  private reducedMotion = false;
+  private motionPreference: MediaQueryList | null = null;
+  private moveCheckpointOpen = false;
+  private resetCheckpointOpen = false;
+  private disposed = false;
   private readonly game: Phaser.Game;
   private readonly onMove: (first: Position, second: Position) => void;
   private readonly canMove: () => boolean;
@@ -90,7 +106,13 @@ export class BoardView {
     window.addEventListener('blur', this.cancelGesture);
     document.addEventListener('visibilitychange', this.visibilityChange);
     scene.events.once('shutdown', () => {
+      this.disposed = true;
       this.cancelGesture();
+      scene.events.off('update', this.updateParamecia);
+      this.motionPreference?.removeEventListener('change', this.reducedMotionChanged);
+      this.motionPreference = null;
+      this.parameciumStates.shutdown();
+      this.paramecia.clear();
       canvas.removeEventListener('pointerdown', this.pointerDown);
       canvas.removeEventListener('pointermove', this.pointerMove);
       canvas.removeEventListener('pointerup', this.pointerUp);
@@ -99,10 +121,48 @@ export class BoardView {
       window.removeEventListener('blur', this.cancelGesture);
       document.removeEventListener('visibilitychange', this.visibilityChange);
     });
+    this.motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    this.reducedMotion = this.motionPreference.matches;
+    this.motionPreference.addEventListener('change', this.reducedMotionChanged);
+    scene.events.on('update', this.updateParamecia);
     canvas.setAttribute('role', 'img');
-    canvas.setAttribute('aria-label', 'Eight by eight game board. Select or drag between neighboring numbered creatures.');
+    canvas.setAttribute('aria-label', 'Eight by eight game board. Creatures are numbered zero through four. Select or drag between neighboring creatures.');
     this.render(this.board);
+    void registerParameciumAssets(scene).then(loaded => {
+      if (this.disposed) return;
+      this.assetStatus = loaded ? 'ready' : 'unavailable';
+      if (loaded) {
+        canvas.setAttribute('aria-label', 'Eight by eight game board. Level zero creatures are animated paramecia; levels one through four are numbered. Select or drag between neighboring creatures.');
+        this.attachParamecia();
+      }
+    });
   }
+
+  private attachParamecia(): void {
+    this.paramecia.clear();
+    this.board.forEach((row, rowIndex) => row.forEach((creature, col) => {
+      if (creature?.level !== 0) return;
+      const piece = this.cells.get(this.key({ row: rowIndex, col }));
+      if (!piece?.scene) return;
+      if (piece.length > 1) piece.removeAt(1, true);
+      const state = this.parameciumStates.getOrCreate(creature.id);
+      const key = this.key({ row: rowIndex, col });
+      const artwork = createParameciumArtwork(this.scene, state, CELL, this.invertedCells.has(key));
+      piece.add(artwork.container);
+      this.paramecia.set(creature.id, { advance: artwork.advance });
+    }));
+  }
+
+  private reducedMotionChanged = (event: MediaQueryListEvent): void => {
+    this.reducedMotion = event.matches;
+  };
+
+  private updateParamecia = (_time: number, deltaMilliseconds: number): void => {
+    if (this.assetStatus !== 'ready' || this.disposed) return;
+    for (const paramecium of this.paramecia.values()) {
+      paramecium.advance(deltaMilliseconds / 1000, this.reducedMotion);
+    }
+  };
 
   private coordinates(event: PointerEvent): { x: number; y: number } | null {
     const canvas = this.game.canvas;
@@ -226,10 +286,19 @@ export class BoardView {
     const tile = this.scene.add.graphics();
     tile.fillStyle(color).fillRoundedRect(-45, -45, 90, 90, 10);
     if (this.selected && same(this.selected, position)) tile.lineStyle(4, 0x234f3d).strokeRoundedRect(-43, -43, 86, 86, 8);
-    const label = this.scene.add.text(0, 0, String(creature.level), {
-      fontFamily: 'Space Grotesk, sans-serif', fontSize: '38px', fontStyle: 'bold', color: `#${textColor.toString(16).padStart(6, '0')}`,
-    }).setOrigin(0.5);
-    const container = this.scene.add.container(position.col * CELL + CELL / 2, position.row * CELL + CELL / 2, [tile, label]);
+    const children: Phaser.GameObjects.GameObject[] = [tile];
+    if (creature.level === 0 && this.assetStatus === 'ready') {
+      const state = this.parameciumStates.getOrCreate(creature.id);
+      const artwork = createParameciumArtwork(this.scene, state, CELL, inverted);
+      children.push(artwork.container);
+      this.paramecia.set(creature.id, { advance: artwork.advance });
+    } else {
+      const label = this.scene.add.text(0, 0, String(creature.level), {
+        fontFamily: 'Space Grotesk, sans-serif', fontSize: '38px', fontStyle: 'bold', color: `#${textColor.toString(16).padStart(6, '0')}`,
+      }).setOrigin(0.5);
+      children.push(label);
+    }
+    const container = this.scene.add.container(position.col * CELL + CELL / 2, position.row * CELL + CELL / 2, children);
     if (tracked) {
       this.pieces.push(container);
       this.cells.set(this.key(position), container);
@@ -290,13 +359,58 @@ export class BoardView {
   render(board: Board, inverted: ReadonlySet<string> = new Set()): void {
     this.cancelGesture();
     this.board = board;
+    this.invertedCells = new Set(inverted);
     if (!this.scene) return;
     this.pieces.forEach(piece => piece.destroy());
     this.pieces = [];
     this.cells.clear();
+    this.paramecia.clear();
     board.forEach((row, rowIndex) => row.forEach((creature, col) => {
       if (creature) this.piece(creature, { row: rowIndex, col }, inverted.has(`${rowIndex},${col}`));
     }));
+  }
+
+  beginMove(): void {
+    if (this.resetCheckpointOpen || this.moveCheckpointOpen) return;
+    this.parameciumStates.beginMove();
+    this.moveCheckpointOpen = true;
+  }
+
+  commitMove(board: Board): void {
+    if (!this.moveCheckpointOpen) return;
+    this.parameciumStates.commit(board.flatMap(row => row.flatMap(creature => creature?.level === 0 ? [creature.id] : [])));
+    this.moveCheckpointOpen = false;
+  }
+
+  rollbackMove(): void {
+    if (!this.moveCheckpointOpen) return;
+    this.parameciumStates.rollback();
+    this.moveCheckpointOpen = false;
+    this.paramecia.clear();
+  }
+
+  beginReset(): void {
+    if (this.resetCheckpointOpen) return;
+    this.rollbackMove();
+    this.parameciumStates.beginReset();
+    this.resetCheckpointOpen = true;
+  }
+
+  resetSucceeded(): void {
+    if (!this.resetCheckpointOpen) return;
+    this.parameciumStates.resetSucceeded();
+    this.resetCheckpointOpen = false;
+  }
+
+  resetFailed(): void {
+    if (!this.resetCheckpointOpen) return;
+    this.parameciumStates.resetFailed();
+    this.resetCheckpointOpen = false;
+  }
+
+  destroy(): void {
+    if (this.disposed) return;
+    this.game.destroy(true);
   }
 
   clearSelection(): void {
@@ -341,6 +455,7 @@ export class BoardView {
     this.pieces.forEach(piece => piece.destroy());
     this.pieces = [];
     this.cells.clear();
+    this.paramecia.clear();
     const animated: Array<{ piece: Phaser.GameObjects.Container; destination: number }> = [];
     board.forEach((row, rowIndex) => row.forEach((creature, col) => {
       if (!creature) return;

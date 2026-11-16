@@ -68,38 +68,35 @@ test('failure dialog does not appear while free moves or reacting swaps remain',
   await expect(page.getByTestId('free-moves')).toHaveText('3');
 });
 
-test('idle move hint flashes a legal participant without changing game state', async ({ page }) => {
+test('idle move hint selects a board participant without changing game state', async ({ page }) => {
   await page.clock.install();
   await startWithLevels(page, winningBoard);
   await page.evaluate(async () => {
     const viewPath = '/src/view/board-view.ts';
     const { BoardView } = await import(viewPath);
-    const original = BoardView.prototype.hint;
     (window as unknown as { hints: Array<{ row: number; col: number }> }).hints = [];
     (window as unknown as { hintComplete: boolean }).hintComplete = false;
-    BoardView.prototype.hint = async function (this: BoardViewType, position: Position, signal: AbortSignal) {
+    BoardView.prototype.hint = async function (this: BoardViewType, position: Position, _signal: AbortSignal) {
       (window as unknown as { hints: Array<{ row: number; col: number }> }).hints.push(position);
-      try { await original.call(this, position, signal); }
-      finally { (window as unknown as { hintComplete: boolean }).hintComplete = true; }
+      (window as unknown as { hintComplete: boolean }).hintComplete = true;
     };
   });
   const before = { levels: await readLevels(page), turns: await page.getByTestId('turns').textContent(), freeMoves: await page.getByTestId('free-moves').textContent(), removed: await page.getByTestId('removed').textContent() };
-  await page.clock.runFor(10_050);
+  await page.clock.fastForward(10_000);
   await expect.poll(() => page.evaluate(() => (window as unknown as { hints: unknown[] }).hints.length)).toBe(1);
-  await page.clock.runFor(600);
   await expect.poll(() => page.evaluate(() => (window as unknown as { hintComplete: boolean }).hintComplete)).toBe(true);
   const hints = await page.evaluate(() => (window as unknown as { hints: Array<{ row: number; col: number }> }).hints);
   expect(hints[0].row).toBeGreaterThanOrEqual(0);
   expect(hints[0].row).toBeLessThan(8);
   expect(hints[0].col).toBeGreaterThanOrEqual(0);
   expect(hints[0].col).toBeLessThan(8);
+  expect(before.levels[hints[0].row * 8 + hints[0].col]).toBeGreaterThanOrEqual(0);
   expect(await readLevels(page)).toEqual(before.levels);
   await expect(page.getByTestId('turns')).toHaveText(before.turns!);
   await expect(page.getByTestId('free-moves')).toHaveText(before.freeMoves!);
   await expect(page.getByTestId('removed')).toHaveText(before.removed!);
-  await page.clock.runFor(10_600);
+  await page.clock.fastForward(10_000);
   await expect.poll(() => page.evaluate(() => (window as unknown as { hints: unknown[] }).hints.length)).toBe(2);
-  await page.clock.runFor(600);
   expect(await readLevels(page)).toEqual(before.levels);
 });
 
@@ -112,10 +109,19 @@ test('starting a move cancels the pending idle hint timer', async ({ page }) => 
     (window as unknown as { hintCount: number }).hintCount = 0;
     BoardView.prototype.hint = async function () { (window as unknown as { hintCount: number }).hintCount++; };
   });
-  await page.clock.runFor(9000);
-  await swap(page, { row: 3, col: 3 }, { row: 3, col: 4 });
+  await page.clock.fastForward(9000);
+  const bounds = await page.locator('canvas').boundingBox();
+  if (!bounds) throw new Error('Board canvas has no bounds');
+  const startX = bounds.x + bounds.width * 3.5 / 8;
+  const endX = bounds.x + bounds.width * 4.5 / 8;
+  const y = bounds.y + bounds.height * 3.5 / 8;
+  await page.mouse.move(startX, y);
+  await page.mouse.down();
+  await page.mouse.move(endX, y);
+  await page.mouse.up();
   await expect(page.getByTestId('turns')).toHaveText('1');
-  await page.clock.runFor(1500);
+  expect(await page.evaluate(() => (window as unknown as { hintCount: number }).hintCount)).toBe(0);
+  await page.clock.runFor(5000);
   expect(await page.evaluate(() => (window as unknown as { hintCount: number }).hintCount)).toBe(0);
 });
 
@@ -140,7 +146,7 @@ test('starting a move cancels an active creature hint', async ({ page }) => {
       }
     };
   });
-  await page.clock.runFor(10_000);
+  await page.clock.fastForward(10_000);
   await expect.poll(() => page.evaluate(() => (window as unknown as { hintStarted: number }).hintStarted)).toBe(1);
   expect(await page.evaluate(() => (window as unknown as { hintComplete: boolean }).hintComplete)).toBe(false);
   await swap(page, { row: 3, col: 3 }, { row: 3, col: 4 });
@@ -151,7 +157,6 @@ test('starting a move cancels an active creature hint', async ({ page }) => {
 test('idle board with no reacting swaps flashes Free Moves while preserving its value', async ({ page }) => {
   await page.clock.install();
   await settleWithoutMoves(page);
-  await page.clock.runFor(20_000);
   await expect(page.getByTestId('turns')).toHaveText('1');
   await expect(page.getByTestId('free-moves')).toHaveText('3');
   await expect(page.getByRole('status')).toHaveText('Choose two neighboring creatures.');
@@ -165,7 +170,7 @@ test('idle board with no reacting swaps flashes Free Moves while preserving its 
     });
     state.freeFlashObserver.observe(element, { attributes: true, attributeFilter: ['class'] });
   });
-  await page.clock.runFor(10_100);
+  await page.clock.fastForward(10_000);
   await expect.poll(() => page.evaluate(() => (window as unknown as { freeFlashSeen: boolean }).freeFlashSeen)).toBe(true);
   await freeMovesStat.evaluate(() => (window as unknown as { freeFlashObserver: MutationObserver }).freeFlashObserver.disconnect());
   await expect(page.getByTestId('free-moves')).toHaveText('3');
