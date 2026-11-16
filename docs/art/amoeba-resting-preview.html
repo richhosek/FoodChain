@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Amoeba | Resting Animation</title>
+  <style>
+    :root { color-scheme: light; font-family: Georgia, serif; color: #382e20; background: #f7f3e8; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; background: radial-gradient(ellipse at 50% 48%, #fffdf6 0%, #f5efdf 76%, #e9e0ca 100%); }
+    header, footer { width: min(100% - 3rem, 1100px); margin-inline: auto; }
+    header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding-block: 1.5rem; border-bottom: 1px solid #d6c9aa; }
+    h1 { margin: 0; font-size: 1.3rem; font-weight: normal; }
+    .label { font-family: 'Trebuchet MS', sans-serif; font-size: .68rem; font-weight: bold; text-transform: uppercase; color: #7b6540; }
+    main { min-height: 0; display: grid; place-items: center; overflow: hidden; }
+    .stage { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "primary companion" "small small"; place-items: center; width: min(92vw, 112vh, 960px); }
+    .creature { display: block; width: 100%; height: auto; pointer-events: none; overflow: visible; }
+    .creature-primary { grid-area: primary; }
+    .creature-companion { grid-area: companion; }
+    .small-sample { grid-area: small; display: grid; justify-items: center; gap: .15rem; margin: -.5rem 0 0; }
+    .small-sample figcaption { color: #7b6540; font-family: 'Trebuchet MS', sans-serif; font-size: .68rem; }
+    .creature-small { width: clamp(50px, 12vw, 110px); }
+    footer { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding-block: 1.2rem; border-top: 1px solid #d6c9aa; font-family: 'Trebuchet MS', sans-serif; font-size: .8rem; }
+    button { border: 1px solid #987b4d; border-radius: 4px; background: #fffdf6; color: #382e20; font: inherit; padding: .65rem 1rem; cursor: pointer; }
+    button:hover { background: #f0e5c9; }
+    button:focus-visible { outline: 3px solid #bd6c39; outline-offset: 3px; }
+    #error { color: #8d3c31; }
+    @media (max-width: 480px) { header, footer { width: calc(100% - 2rem); } .stage { width: min(96vw, 90vh); } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Amoeba</h1>
+    <span class="label">Resting study</span>
+  </header>
+  <main>
+    <div class="stage">
+      <svg class="creature creature-primary" xmlns="http://www.w3.org/2000/svg" viewBox="-32 -32 832 832" role="img" aria-label="Animated amoeba">
+        <defs>
+          <clipPath id="body-highlight-clip"><path d="M360 76 C420 76 455 102 480 145 C498 175 516 189 545 181 C572 173 589 151 612 163 C639 177 629 204 608 224 C588 243 579 258 594 278 C611 301 642 285 664 301 C690 321 697 357 701 395 C706 438 692 474 666 494 C641 513 613 507 591 492 C570 478 551 466 531 479 C509 494 512 519 491 536 C474 550 458 557 440 546 C421 535 403 533 382 545 C352 562 331 591 300 614 C264 640 219 641 183 619 C148 598 124 565 115 526 C104 481 115 441 143 411 C167 385 199 373 205 348 C212 320 190 294 179 265 C164 229 173 192 197 162 C225 125 257 98 296 84 C318 76 340 76 360 76 Z"/></clipPath>
+          <clipPath id="eye-clip"><circle cx="360" cy="260" r="65"/></clipPath>
+        </defs>
+        <path id="body-shape" d="M360 76 C420 76 455 102 480 145 C498 175 516 189 545 181 C572 173 589 151 612 163 C639 177 629 204 608 224 C588 243 579 258 594 278 C611 301 642 285 664 301 C690 321 697 357 701 395 C706 438 692 474 666 494 C641 513 613 507 591 492 C570 478 551 466 531 479 C509 494 512 519 491 536 C474 550 458 557 440 546 C421 535 403 533 382 545 C352 562 331 591 300 614 C264 640 219 641 183 619 C148 598 124 565 115 526 C104 481 115 441 143 411 C167 385 199 373 205 348 C212 320 190 294 179 265 C164 229 173 192 197 162 C225 125 257 98 296 84 C318 76 340 76 360 76 Z" fill="#f4c84c" stroke="#111111" stroke-width="12" stroke-linejoin="round"/>
+        <path id="body-highlight" d="M208 229 C232 192 258 165 287 151 C300 145 314 143 327 144" fill="none" stroke="#fff0cf" stroke-width="12" stroke-linecap="round" opacity="0.82" clip-path="url(#body-highlight-clip)"/>
+
+        <g id="internal-details" stroke="#111111" stroke-width="9" stroke-linejoin="round">
+          <g id="detail-large" data-drifter="true" data-home-x="196" data-home-y="460" data-safe-radius="55" data-amplitude-x="3.2" data-amplitude-y="2.4">
+            <path id="large-vacuole" d="M-44 -13 C-28 -40 7 -47 29 -31 C51 -14 48 15 26 31 C3 47 -27 40 -43 18 C-51 6 -51 -5 -44 -13 Z" fill="#dc9130"/>
+            <circle id="vacuole-glint" cx="0" cy="-16" r="8" fill="#fff0cf" stroke="none"/>
+          </g>
+          <g id="detail-left-lower" data-drifter="true" data-home-x="236" data-home-y="563" data-safe-radius="24" data-amplitude-x="7.5" data-amplitude-y="6">
+            <circle cx="0" cy="0" r="19" fill="#fff0cf"/>
+          </g>
+          <g id="detail-center-left" data-drifter="true" data-home-x="300" data-home-y="520" data-safe-radius="14" data-amplitude-x="8.5" data-amplitude-y="6.8">
+            <circle cx="0" cy="0" r="9" fill="#fff0cf"/>
+          </g>
+          <g id="detail-right" data-drifter="true" data-home-x="645" data-home-y="418.5" data-safe-radius="34" data-amplitude-x="2.8" data-amplitude-y="2.2">
+            <path d="M-21 -13.5 C-4 -30.5 20 -22.5 25 -2.5 C30 16.5 12 30.5 -6 23.5 C-24 16.5 -31 -0.5 -21 -13.5 Z" fill="#e9a83b"/>
+          </g>
+          <g id="detail-right-small" data-drifter="true" data-home-x="590" data-home-y="455" data-safe-radius="14" data-amplitude-x="6.8" data-amplitude-y="5.3">
+            <circle cx="0" cy="0" r="9" fill="#fff0cf"/>
+          </g>
+          <g id="detail-lower-center" data-drifter="true" data-home-x="405" data-home-y="490" data-safe-radius="24" data-amplitude-x="8" data-amplitude-y="6.2">
+            <circle cx="0" cy="0" r="18" fill="#f8dd8b"/>
+          </g>
+        </g>
+
+        <g id="eye-orientation">
+          <g id="eye" transform="translate(360 260) scale(1.5) translate(-360 -260)" stroke="#111111" stroke-width="12">
+            <circle id="eye-white" cx="360" cy="260" r="65" fill="#fffdf8" stroke="none"/>
+            <circle id="pupil" cx="361" cy="256" r="18" fill="#111111" stroke="none"/>
+            <g id="eyelids" clip-path="url(#eye-clip)">
+              <g id="upper-lid"><rect x="285" y="130" width="150" height="65" fill="#f4c84c" stroke="none"/><path d="M285 195 H435" fill="none" stroke-width="12"/></g>
+              <g id="lower-lid"><rect x="285" y="325" width="150" height="65" fill="#f4c84c" stroke="none"/><path d="M285 325 H435" fill="none" stroke-width="12"/></g>
+            </g>
+            <circle cx="360" cy="260" r="65" fill="none"/>
+          </g>
+        </g>
+        <rect id="eyebrow" x="279.375" y="127.25" width="161.25" height="52.5" rx="10" fill="#111111"/>
+      </svg>
+      <figure class="small-sample"><figcaption>Reduced-size preview</figcaption></figure>
+    </div>
+  </main>
+  <footer>
+    <span id="status" aria-live="polite">Resting</span>
+    <button id="toggle" type="button" aria-pressed="false">Pause</button>
+  </footer>
+  <script>
+    const stage = document.querySelector('.stage');
+    const original = document.querySelector('svg.creature');
+    const companion = original.cloneNode(true);
+    companion.classList.add('creature-companion');
+    const small = original.cloneNode(true);
+    small.classList.add('creature-small');
+    small.setAttribute('aria-label', 'Animated amoeba at reduced size');
+    document.querySelector('.small-sample').append(small);
+    stage.append(companion);
+    const creatures = [original, companion, small];
+    const toggle = document.querySelector('#toggle');
+    const status = document.querySelector('#status');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let playing = !reducedMotion.matches;
+    let lastFrameTime = null;
+
+    function setPlaying(value) {
+      playing = value;
+      lastFrameTime = null;
+      toggle.textContent = playing ? 'Pause' : 'Play';
+      toggle.setAttribute('aria-pressed', String(!playing));
+      status.textContent = playing ? 'Resting' : 'Paused';
+    }
+
+    toggle.addEventListener('click', () => setPlaying(!playing));
+    if (reducedMotion.matches) setPlaying(false);
+
+    function scopedId(instance, id) {
+      return instance === 0 ? id : `${id}-${instance}`;
+    }
+
+    function assignUniqueIds(creature, instance) {
+      if (!instance) return;
+      const idMap = new Map([...creature.querySelectorAll('[id]')].map(element => [element.id, scopedId(instance, element.id)]));
+      for (const element of creature.querySelectorAll('[id]')) element.id = idMap.get(element.id);
+      for (const element of creature.querySelectorAll('*')) {
+        for (const attribute of [...element.attributes]) {
+          const value = attribute.value.replace(/url\(#([^)]+)\)/g, (match, id) => `url(#${idMap.get(id) ?? id})`);
+          const resolved = attribute.name === 'href' && value.startsWith('#')
+            ? `#${idMap.get(value.slice(1)) ?? value.slice(1)}`
+            : value;
+          if (resolved !== attribute.value) element.setAttribute(attribute.name, resolved);
+        }
+      }
+    }
+
+    const randomRange = (minimum, maximum) => minimum + Math.random() * (maximum - minimum);
+    const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
+
+    function smoothClosedPath(points) {
+      let path = `M${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`;
+      for (let index = 0; index < points.length; index += 1) {
+        const previous = points[(index + points.length - 1) % points.length];
+        const current = points[index];
+        const next = points[(index + 1) % points.length];
+        const following = points[(index + 2) % points.length];
+        const firstControl = {
+          x: current.x + (next.x - previous.x) / 6,
+          y: current.y + (next.y - previous.y) / 6,
+        };
+        const secondControl = {
+          x: next.x - (following.x - current.x) / 6,
+          y: next.y - (following.y - current.y) / 6,
+        };
+        path += ` C${firstControl.x.toFixed(2)} ${firstControl.y.toFixed(2)} ${secondControl.x.toFixed(2)} ${secondControl.y.toFixed(2)} ${next.x.toFixed(2)} ${next.y.toFixed(2)}`;
+      }
+      return `${path} Z`;
+    }
+
+    function createAnimator(creature, instance) {
+      assignUniqueIds(creature, instance);
+      const get = id => creature.querySelector(`#${scopedId(instance, id)}`);
+      const body = get('body-shape');
+      const pupil = get('pupil');
+      const upperLid = get('upper-lid');
+      const lowerLid = get('lower-lid');
+      const brow = get('eyebrow');
+      const eyeCenter = { x: 360, y: 260 };
+      const contour = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      contour.setAttribute('d', body.getAttribute('d'));
+      const contourLength = contour.getTotalLength();
+      const pointCount = 160;
+      const restPoints = Array.from({ length: pointCount }, (_, index) => {
+        const distance = contourLength * index / pointCount;
+        const position = contour.getPointAtLength(distance);
+        const previous = contour.getPointAtLength((distance - 0.5 + contourLength) % contourLength);
+        const next = contour.getPointAtLength((distance + 0.5) % contourLength);
+        const tangentX = next.x - previous.x;
+        const tangentY = next.y - previous.y;
+        const tangentLength = Math.hypot(tangentX, tangentY) || 1;
+        return {
+          x: position.x,
+          y: position.y,
+          normalX: tangentY / tangentLength,
+          normalY: -tangentX / tangentLength,
+          fraction: index / pointCount,
+        };
+      });
+      const lobeIndex = restPoints.reduce((bestIndex, point, index) => {
+        const best = restPoints[bestIndex];
+        return Math.hypot(point.x - 610, point.y - 220) < Math.hypot(best.x - 610, best.y - 220) ? index : bestIndex;
+      }, 0);
+      const lobeFraction = lobeIndex / pointCount;
+      const drifters = [...creature.querySelectorAll('[data-drifter]')].map((element, index) => ({
+        element,
+        homeX: Number(element.dataset.homeX),
+        homeY: Number(element.dataset.homeY),
+        radius: Number(element.dataset.safeRadius),
+        amplitudeX: Number(element.dataset.amplitudeX),
+        amplitudeY: Number(element.dataset.amplitudeY),
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.18 + Math.random() * 0.08,
+        phaseOffset: index * 1.7,
+      }));
+
+      let elapsed = 0;
+      let nextBlink = randomRange(2, 5);
+      let nextGlance = randomRange(2.5, 5);
+      let glanceStart = null;
+      let glanceDuration = 0;
+      let gazeX = 0;
+      let gazeY = 0;
+      let blinkAt = null;
+      const wavePhase = Math.random() * Math.PI * 2;
+      const lobePhase = Math.random() * Math.PI * 2;
+      const wavePeriod = randomRange(3.5, 4.9);
+      const lobePeriod = randomRange(2.4, 3.2);
+      const blinkDuration = 0.22;
+      const gazeFlick = 0.1;
+
+      function advanceSchedules() {
+        if (glanceStart === null && elapsed >= nextGlance) {
+          const direction = Math.floor(Math.random() * 8) * Math.PI / 4;
+          gazeX = 39 * Math.cos(direction);
+          gazeY = 39 * Math.sin(direction);
+          glanceStart = nextGlance;
+          glanceDuration = randomRange(0.35, 0.65);
+        }
+        if (glanceStart !== null && elapsed >= glanceStart + glanceDuration + gazeFlick * 2) {
+          glanceStart = null;
+          nextGlance = elapsed + randomRange(2.5, 5);
+          gazeX = 0;
+          gazeY = 0;
+        }
+        if (blinkAt === null && elapsed >= nextBlink) blinkAt = nextBlink;
+        if (blinkAt !== null && elapsed >= blinkAt + blinkDuration) {
+          blinkAt = null;
+          nextBlink = elapsed + randomRange(2.5, 6.5);
+        }
+      }
+
+      function gazeAmount() {
+        if (glanceStart === null) return 0;
+        const age = elapsed - glanceStart;
+        const total = glanceDuration + gazeFlick * 2;
+        return clamp(Math.min(age / gazeFlick, (total - age) / gazeFlick), 0, 1);
+      }
+
+      function blinkAmount() {
+        if (blinkAt === null) return 0;
+        const age = elapsed - blinkAt;
+        return age >= 0 && age < blinkDuration
+          ? 1 - Math.abs(1 - 2 * age / blinkDuration)
+          : 0;
+      }
+
+      function updateBody() {
+        const lobeCenter = lobeFraction;
+        const points = restPoints.map(point => {
+          const distance = Math.min(Math.abs(point.fraction - lobeCenter), 1 - Math.abs(point.fraction - lobeCenter));
+          const lobeWeight = Math.exp(-(distance * distance) / (2 * 0.035 * 0.035));
+          const ripple = 8 * Math.sin(elapsed * Math.PI * 2 / wavePeriod + point.fraction * Math.PI * 6 + wavePhase)
+            + 3.5 * Math.sin(elapsed * Math.PI * 2 / 3.2 - point.fraction * Math.PI * 8 + wavePhase * 0.7);
+          const lobeWave = 8.5 * Math.sin(elapsed * Math.PI * 2 / lobePeriod + lobePhase) * lobeWeight;
+          const offset = ripple + lobeWave;
+          return {
+            x: point.x + point.normalX * offset,
+            y: point.y + point.normalY * offset,
+          };
+        });
+        body.setAttribute('d', smoothClosedPath(points));
+        creature.dataset.upperRightLobeMoved = String(Math.abs(8.5 * Math.sin(elapsed * Math.PI * 2 / lobePeriod + lobePhase)) > 1);
+      }
+
+      function updateDrifters() {
+        const positions = drifters.map(drifter => {
+          const phase = elapsed * drifter.speed + drifter.phase;
+          const x = drifter.homeX + drifter.amplitudeX * Math.sin(phase);
+          const y = drifter.homeY + drifter.amplitudeY * Math.cos(phase * 0.83 + drifter.phaseOffset);
+          drifter.element.setAttribute('transform', `translate(${x} ${y})`);
+          return { ...drifter, x, y };
+        });
+        const unsafe = new Set();
+        positions.forEach((first, index) => {
+          positions.slice(index + 1).forEach(second => {
+            if (Math.hypot(second.x - first.x, second.y - first.y) <= first.radius + second.radius + 3) {
+              unsafe.add(first.element.id);
+              unsafe.add(second.element.id);
+            }
+          });
+          const contained = Array.from({ length: 20 }, (_, angleIndex) => {
+            const angle = angleIndex * Math.PI * 2 / 20;
+            const point = creature.createSVGPoint();
+            point.x = first.x + Math.cos(angle) * first.radius;
+            point.y = first.y + Math.sin(angle) * first.radius;
+            return body.isPointInFill(point);
+          }).every(Boolean);
+          if (!contained) unsafe.add(first.element.id);
+        });
+        creature.dataset.unsafeInteriorIds = [...unsafe].join(',');
+        creature.dataset.interiorsSafe = String(unsafe.size === 0);
+      }
+
+      function render(delta) {
+        if (!playing) return;
+        elapsed += Math.min(delta, 0.05);
+        advanceSchedules();
+        const gaze = gazeAmount();
+        const closure = blinkAmount();
+        const pupilX = gazeX * gaze;
+        const pupilY = gazeY * gaze;
+        pupil.setAttribute('transform', `translate(${pupilX} ${pupilY})`);
+        upperLid.setAttribute('transform', `translate(0 ${65 * closure})`);
+        lowerLid.setAttribute('transform', `translate(0 ${-65 * closure})`);
+        const browDegrees = -pupilX / 39 * 10;
+        brow.setAttribute('transform', `rotate(${browDegrees} 360 153.5)`);
+        creature.dataset.gazeX = String(pupilX);
+        creature.dataset.blinkClosure = String(closure);
+        if (closure > 0.9) creature.dataset.blinked = 'true';
+        if (gaze > 0.9) creature.dataset.gazed = 'true';
+        if (pupilX < -10 && browDegrees > 0) creature.dataset.sawLeftBrowTilt = 'true';
+        if (pupilX > 10 && browDegrees < 0) creature.dataset.sawRightBrowTilt = 'true';
+        creature.dataset.browCounterRotationHeld = String(Math.abs(pupilX) < 1 || Math.sign(browDegrees) === -Math.sign(pupilX));
+        updateBody();
+        updateDrifters();
+      }
+
+      creature.dataset.blinked = 'false';
+      creature.dataset.gazed = 'false';
+      creature.dataset.sawLeftBrowTilt = 'false';
+      creature.dataset.sawRightBrowTilt = 'false';
+      creature.dataset.browCounterRotationHeld = 'true';
+      creature.dataset.interiorsSafe = 'true';
+      creature.dataset.upperRightLobeMoved = 'false';
+      return { render };
+    }
+
+    const animators = creatures.map((creature, index) => createAnimator(creature, index));
+    function animate(now) {
+      const delta = lastFrameTime === null ? 0 : (now - lastFrameTime) / 1000;
+      lastFrameTime = now;
+      if (playing) for (const animator of animators) animator.render(delta);
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>

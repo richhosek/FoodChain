@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-32 -32 832 832" role="img" aria-labelledby="title description">
+  <title id="title">Amoeba character concept</title>
+  <desc id="description">A golden amoeba with three broad smooth lobes, two small connecting bumps, an inset eye, and a heavy horizontal brow touching the eye, based on the uploaded sketch.</desc>
+
+  <g id="body">
+    <path id="body-shape" d="M360 76 C420 76 455 102 480 145 C498 175 516 189 545 181 C572 173 589 151 612 163 C639 177 629 204 608 224 C588 243 579 258 594 278 C611 301 642 285 664 301 C690 321 697 357 701 395 C706 438 692 474 666 494 C641 513 613 507 591 492 C570 478 551 466 531 479 C509 494 512 519 491 536 C474 550 458 557 440 546 C421 535 403 533 382 545 C352 562 331 591 300 614 C264 640 219 641 183 619 C148 598 124 565 115 526 C104 481 115 441 143 411 C167 385 199 373 205 348 C212 320 190 294 179 265 C164 229 173 192 197 162 C225 125 257 98 296 84 C318 76 340 76 360 76 Z" fill="#f4c84c" stroke="#111111" stroke-width="12" stroke-linejoin="round"/>
+    <defs><clipPath id="body-highlight-clip"><use href="#body-shape"/></clipPath></defs>
+    <path id="body-highlight" d="M208 229 C232 192 258 165 287 151 C300 145 314 143 327 144" fill="none" stroke="#fff0cf" stroke-width="12" stroke-linecap="round" opacity="0.82" clip-path="url(#body-highlight-clip)"/>
+  </g>
+
+  <g id="internal-details" stroke="#111111" stroke-width="9" stroke-linejoin="round">
+    <path id="large-vacuole" d="M152 447 C168 420 203 413 225 429 C247 446 244 475 222 491 C199 507 169 500 153 478 C145 466 145 455 152 447 Z" fill="#dc9130"/>
+    <circle id="vacuole-glint" cx="196" cy="444" r="8" fill="#fff0cf" stroke="none"/>
+    <circle data-vacuole="true" cx="236" cy="563" r="19" fill="#fff0cf"/>
+    <circle data-vacuole="true" cx="300" cy="520" r="9" fill="#fff0cf"/>
+    <path d="M624 405 C641 388 665 396 670 416 C675 435 657 449 639 442 C621 435 614 418 624 405 Z" fill="#e9a83b"/>
+    <circle data-vacuole="true" cx="590" cy="455" r="9" fill="#fff0cf"/>
+    <circle data-vacuole="true" cx="400" cy="480" r="18" fill="#f8dd8b"/>
+  </g>
+
+  <g id="eye" transform="translate(360 260) scale(1.5) translate(-360 -260)" stroke="#111111" stroke-width="12">
+    <circle id="eye-white" cx="360" cy="260" r="65" fill="#fffdf8" stroke="none"/>
+    <circle id="pupil" cx="361" cy="256" r="18" fill="#111111" stroke="none"/>
+    <circle id="eye-outline" cx="360" cy="260" r="65" fill="none"/>
+  </g>
+  <rect id="eyebrow" x="279.375" y="127.25" width="161.25" height="52.5" rx="10" fill="#111111"/>
+</svg>

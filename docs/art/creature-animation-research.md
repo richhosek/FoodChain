@@ -11,7 +11,7 @@ Replace the prototype's numbered creatures with expressive, microscopic, single-
 | Level | Creature direction | Status | Visual idea |
 | --- | --- | --- | --- |
 | 0 | Paramecium | Chosen base creature | Rounded slipper shape, short cilia, expressive eyes. |
-| 1 | Amoeba | Proposed | A soft, irregular outline with flexible pseudopods. |
+| 1 | Amoeba | Initial concept | [Sketch-based concept](amoeba-concept.svg) and [resting animation study](amoeba-resting-preview.html): irregular pseudopod silhouette, paramecium-matched blinking and gaze, counter-tilting brow, slow contour ripple, and drifting internal details. The original sketch is [1.ameoba.jpg](1.ameoba.jpg). |
 | 2 | Euglena-inspired creature | Proposed | Teardrop-shaped body and a trailing flagellum. |
 | 3 | Stentor-inspired creature | Proposed | Trumpet-shaped body with a waving crown. |
 | 4 | Didinium-inspired creature | Proposed | Barrel-shaped predator with a prominent feeding opening and bands of cilia. |

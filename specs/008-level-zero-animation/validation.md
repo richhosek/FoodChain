@@ -34,6 +34,7 @@
 - The final broad non-performance run completed 142 desktop/mobile cases: 136 passed, 1 failed and 5 were skipped. The only failure was the mouse/touch screenshot parity case taking its first capture before asynchronous artwork loaded. The test now waits for the loaded-art label and two rendered frames; the isolated mobile parity rerun passed. The entire broad suite was not rerun after this test-only synchronization fix.
 - `git diff --check`: passed.
 - The art, cilia count and body rotation range have since been revised. The dense-board metrics above predate the final 32-cilia, 12-24-degree implementation and were not remeasured for this visual update.
+- Final rotation refinement: unit suite passed 102/102; focused asset, resting, effect, hit-target, preview-eye and runtime-eye tests passed 14/14 across desktop and mobile emulation; typecheck and production build passed. The browser check confirms the eye child counter-rotates against the body while its position remains attached to the rotating artwork.
 
 ## Dense-Board Performance
 
