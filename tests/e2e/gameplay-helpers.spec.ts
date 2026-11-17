@@ -109,7 +109,7 @@ test('starting a move cancels the pending idle hint timer', async ({ page }) => 
     (window as unknown as { hintCount: number }).hintCount = 0;
     BoardView.prototype.hint = async function () { (window as unknown as { hintCount: number }).hintCount++; };
   });
-  await page.clock.fastForward(9000);
+  await page.clock.fastForward(5000);
   const bounds = await page.locator('canvas').boundingBox();
   if (!bounds) throw new Error('Board canvas has no bounds');
   const startX = bounds.x + bounds.width * 3.5 / 8;
