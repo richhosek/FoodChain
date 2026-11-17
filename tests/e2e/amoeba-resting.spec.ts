@@ -2,6 +2,70 @@ import { expect, test } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { boardLevels, readLevels, startWithLevels } from './helpers.ts';
+
+const mixedBoard = boardLevels([[2, 2], [2, 3], [2, 4]]);
+const amoebaCells = [{ row: 2, col: 2 }, { row: 2, col: 3 }, { row: 2, col: 4 }];
+
+async function cellPixels(page: import('@playwright/test').Page, position: { row: number; col: number }) {
+  return page.locator('canvas').evaluate((element, cell) => {
+    const canvas = element as HTMLCanvasElement;
+    const pixels = canvas.getContext('2d')!.getImageData(cell.col * 100, cell.row * 100, 100, 100).data;
+    let goldenBody = 0;
+    let whiteEye = 0;
+    let darkOutline = 0;
+    for (let index = 0; index < pixels.length; index += 4) {
+      const red = pixels[index]!;
+      const green = pixels[index + 1]!;
+      const blue = pixels[index + 2]!;
+      if (red > 225 && green > 155 && green < 220 && blue < 115) goldenBody += 1;
+      if (red > 245 && green > 245 && blue > 235) whiteEye += 1;
+      if (red < 45 && green < 45 && blue < 45) darkOutline += 1;
+    }
+    return { goldenBody, whiteEye, darkOutline };
+  }, position);
+}
+
+async function cellSignature(page: import('@playwright/test').Page, position: { row: number; col: number }): Promise<string> {
+  return page.locator('canvas').evaluate((element, cell) => {
+    const canvas = element as HTMLCanvasElement;
+    return Array.from(canvas.getContext('2d')!.getImageData(cell.col * 100, cell.row * 100, 100, 100).data).join(',');
+  }, position);
+}
+
+test('mixed-level board renders approved level-one amoebae with independent resting motion', async ({ page }) => {
+  await startWithLevels(page, mixedBoard);
+  const canvas = page.locator('canvas');
+  await expect.poll(() => canvas.getAttribute('aria-label'), { timeout: 30_000 }).toMatch(/amoeba/i);
+  await expect.poll(async () => (await cellPixels(page, amoebaCells[0]!)).goldenBody).toBeGreaterThan(100);
+
+  for (const position of amoebaCells) {
+    const pixels = await cellPixels(page, position);
+    expect(pixels.goldenBody).toBeGreaterThan(100);
+    expect(pixels.whiteEye).toBeGreaterThan(10);
+    expect(pixels.darkOutline).toBeGreaterThan(20);
+  }
+  expect(await readLevels(page)).toEqual(mixedBoard);
+
+  const firstInitial = await cellSignature(page, amoebaCells[0]!);
+  const secondInitial = await cellSignature(page, amoebaCells[1]!);
+  await expect.poll(async () => cellSignature(page, amoebaCells[0]!)).not.toBe(firstInitial);
+  await expect.poll(async () => cellSignature(page, amoebaCells[1]!)).not.toBe(secondInitial);
+
+  const parameciumCell = await page.locator('canvas').evaluate(element => {
+    const canvas = element as HTMLCanvasElement;
+    const pixels = canvas.getContext('2d')!.getImageData(0, 0, 100, 100).data;
+    let mintBody = 0;
+    for (let index = 0; index < pixels.length; index += 4) {
+      const red = pixels[index]!;
+      const green = pixels[index + 1]!;
+      const blue = pixels[index + 2]!;
+      if (red >= 130 && red <= 180 && green >= 185 && green <= 235 && blue >= 170 && blue <= 220) mintBody += 1;
+    }
+    return mintBody;
+  });
+  expect(parameciumCell).toBeGreaterThan(100);
+});
 
 test('amoeba resting study starts from the approved character concept geometry', async () => {
   const concept = await readFile(resolve('docs/art/amoeba-concept.svg'), 'utf8');

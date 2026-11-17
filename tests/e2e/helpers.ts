@@ -73,8 +73,15 @@ export async function readLevels(page: Page): Promise<number[]> {
     const context = document.querySelector('canvas')!.getContext('2d')!;
     const colors = ['185,220,184', '241,211,148', '239,169,151', '169,205,208', '182,185,217'];
     return Array.from({ length: 64 }, (_, index) => {
-      const color = Array.from(context.getImageData(index % 8 * 100 + 20, Math.floor(index / 8) * 100 + 20, 1, 1).data).slice(0, 3).join(',');
-      return colors.indexOf(color);
+      const baseX = index % 8 * 100;
+      const baseY = Math.floor(index / 8) * 100;
+      const counts = new Map<string, number>();
+      for (const [offsetX, offsetY] of [[12, 12], [88, 12], [12, 88], [88, 88]]) {
+        const color = Array.from(context.getImageData(baseX + offsetX, baseY + offsetY, 1, 1).data).slice(0, 3).join(',');
+        counts.set(color, (counts.get(color) ?? 0) + 1);
+      }
+      const majorityColor = [...counts].sort((first, second) => second[1] - first[1])[0]?.[0] ?? '';
+      return colors.indexOf(majorityColor);
     });
   });
 }

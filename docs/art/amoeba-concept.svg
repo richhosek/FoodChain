@@ -2,6 +2,11 @@
   <title id="title">Amoeba character concept</title>
   <desc id="description">A golden amoeba with three broad smooth lobes, two small connecting bumps, an inset eye, and a heavy horizontal brow touching the eye, based on the uploaded sketch.</desc>
 
+  <defs>
+    <rect id="neutral-bounds" x="94.75" y="67.625" width="607.8125" height="563.375" data-body="body-frame-00" data-face="face-frame-00" data-lid="open" data-rotation-degrees="0"/>
+  </defs>
+  <metadata>Neutral bounds in SVG design coordinates: frame 0's generated contour and interior details, centered face, open eye, zero rotation; visible strokes included. Extrema measured at 16x with alpha 128 and pixel-edge coordinates, to 1/16 design unit.</metadata>
+
   <g id="body">
     <path id="body-shape" d="M360 76 C420 76 455 102 480 145 C498 175 516 189 545 181 C572 173 589 151 612 163 C639 177 629 204 608 224 C588 243 579 258 594 278 C611 301 642 285 664 301 C690 321 697 357 701 395 C706 438 692 474 666 494 C641 513 613 507 591 492 C570 478 551 466 531 479 C509 494 512 519 491 536 C474 550 458 557 440 546 C421 535 403 533 382 545 C352 562 331 591 300 614 C264 640 219 641 183 619 C148 598 124 565 115 526 C104 481 115 441 143 411 C167 385 199 373 205 348 C212 320 190 294 179 265 C164 229 173 192 197 162 C225 125 257 98 296 84 C318 76 340 76 360 76 Z" fill="#f4c84c" stroke="#111111" stroke-width="12" stroke-linejoin="round"/>
     <defs><clipPath id="body-highlight-clip"><use href="#body-shape"/></clipPath></defs>

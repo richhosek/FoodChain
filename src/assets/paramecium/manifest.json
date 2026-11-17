@@ -4,8 +4,26 @@
   "ciliaLengthScale": 2,
   "ciliaSwingDegrees": 30,
   "eyeScale": 1.5,
-  "masterSha256": "9accd5a5f7307d390cff9600a3a0ef070ef7872fe084bddeb6588d1e08524bbb",
-  "previewSha256": "c4f874cba06988d48b8b5ad38c6ef8ed67cef98094ad33f2d443b87343d35d8c",
+  "masterSha256": "b011a799de60cbf1fae4bf55bec0b51ba433eca589fe662fef57cc9aec25b46b",
+  "previewSha256": "1e24823c7a6a017517a50eea3b49ee944a044753a8f24766c0e8d6173ada8d4f",
+  "neutralBounds": {
+    "left": 54,
+    "top": -16,
+    "right": 670.8,
+    "bottom": 781
+  },
+  "neutralPose": "unrotated body; undeformed cilia; open eye; centered gaze; stationary details",
+  "coordinates": "SVG user units; includes strokes and round cilia caps",
+  "designViewBox": [-32, -32, 832, 832],
+  "raster": {
+    "viewBox": [-64, -64, 896, 896],
+    "width": 896,
+    "height": 896,
+    "scaleX": 1,
+    "scaleY": 1,
+    "offsetX": 64,
+    "offsetY": 64
+  },
   "layers": [
     "body",
     "detail-0",

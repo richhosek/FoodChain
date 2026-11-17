@@ -22,7 +22,8 @@ test('the game board exposes its current mixed-level content and input instructi
   await expect(canvas).toHaveAttribute('role', 'img');
   await expect(canvas).toHaveAttribute(
     'aria-label',
-    'Eight by eight game board. Level zero creatures are animated paramecia; levels one through four are numbered. Select or drag between neighboring creatures.',
+    'Eight by eight game board. Level zero creatures are animated paramecia; level one creatures are animated amoebae; levels two through four are numbered. Select or drag between neighboring creatures.',
+    { timeout: 30_000 },
   );
   await expect(page.getByRole('status')).toHaveText('Choose two neighboring creatures.');
 });

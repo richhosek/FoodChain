@@ -1,4 +1,5 @@
 import type Phaser from 'phaser';
+import manifestText from '../assets/paramecium/manifest.json?raw';
 
 const SIZE = 896;
 const RENDER_SIZE = 112;
@@ -21,6 +22,41 @@ const bundledPngs = import.meta.glob<string>('../assets/paramecium/*.png', {
   import: 'default',
 });
 
+export interface ParameciumBounds {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
+
+export function validateParameciumMetadata(value: unknown): ParameciumBounds | null {
+  if (!value || typeof value !== 'object') return null;
+  const metadata = value as Record<string, unknown>;
+  const bounds = metadata.neutralBounds as Record<string, unknown> | null | undefined;
+  const raster = metadata.raster as Record<string, unknown> | null | undefined;
+  if (!bounds || typeof bounds !== 'object' || !raster || typeof raster !== 'object') return null;
+  const { left, top, right, bottom } = bounds;
+  if (![left, top, right, bottom].every(number => typeof number === 'number' && Number.isFinite(number))) return null;
+  if (typeof left !== 'number' || typeof top !== 'number' || typeof right !== 'number' || typeof bottom !== 'number'
+    || left >= right || top >= bottom) return null;
+  const sameArray = (candidate: unknown, expected: number[]) => Array.isArray(candidate)
+    && candidate.length === expected.length && candidate.every((entry, index) => entry === expected[index]);
+  if (metadata.size !== SIZE || !sameArray(metadata.designViewBox, [-32, -32, 832, 832])
+    || !sameArray(raster.viewBox, [-64, -64, SIZE, SIZE]) || raster.width !== SIZE || raster.height !== SIZE
+    || raster.scaleX !== 1 || raster.scaleY !== 1 || raster.offsetX !== 64 || raster.offsetY !== 64
+    || metadata.neutralPose !== 'unrotated body; undeformed cilia; open eye; centered gaze; stationary details'
+    || metadata.coordinates !== 'SVG user units; includes strokes and round cilia caps'
+    || typeof metadata.masterSha256 !== 'string' || !/^[a-f0-9]{64}$/.test(metadata.masterSha256)
+    || typeof metadata.previewSha256 !== 'string' || !/^[a-f0-9]{64}$/.test(metadata.previewSha256)
+    || left < -64 || top < -64 || right > 832 || bottom > 832) return null;
+  return { left: left + 64, top: top + 64, right: right + 64, bottom: bottom + 64 };
+}
+
+export const parameciumNeutralBounds = (() => {
+  try { return validateParameciumMetadata(JSON.parse(manifestText)); }
+  catch { return null; }
+})();
+
 export function parameciumTextureKey(layer: string, inverted = false): string {
   return `${PREFIX}${layer}${inverted ? '-inverse' : ''}`;
 }
@@ -30,6 +66,10 @@ export function parameciumLayerCanvas(scene: Phaser.Scene, layer: string, invert
 }
 
 export async function registerParameciumAssets(scene: Phaser.Scene): Promise<boolean> {
+  if (!parameciumNeutralBounds) {
+    console.warn('Invalid or missing paramecium design metadata');
+    return false;
+  }
   const files = Object.entries(bundledPngs).map(([path, url]) => ({
     filename: path.slice(path.lastIndexOf('/') + 1),
     url,

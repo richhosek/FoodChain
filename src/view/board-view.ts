@@ -5,6 +5,14 @@ import { flashCells } from './effects.ts';
 import { registerParameciumAssets } from './paramecium-assets.ts';
 import { createParameciumArtwork } from './paramecium-view.ts';
 import { ParameciumStateRegistry } from './paramecium-state.ts';
+import { registerAmoebaAssets } from './amoeba-assets.ts';
+import { createAmoebaMotion } from './amoeba-motion.ts';
+import { AmoebaBoardRenderer } from './amoeba-view.ts';
+import type { AmoebaBoardEntry } from './amoeba-view.ts';
+import { AmoebaStateRegistry } from './amoeba-state.ts';
+import { createCreatureLabelRenderer } from './creature-label.ts';
+import type { CreatureLabelRenderer } from './creature-label.ts';
+import { creatureSizeFraction } from './creature-sizing.ts';
 
 const SIZE = 800;
 const CELL = SIZE / BOARD_SIZE;
@@ -48,15 +56,21 @@ function delay(milliseconds: number, signal: AbortSignal): Promise<void> {
 
 export class BoardView {
   private scene!: Phaser.Scene;
+  private labels!: CreatureLabelRenderer;
   private pieces: Phaser.GameObjects.Container[] = [];
   private selected: Position | null = null;
   private board: Board;
   private gesture: Gesture | null = null;
   private cells = new Map<string, Phaser.GameObjects.Container>();
   private paramecia = new Map<string, ParameciumViewEntry>();
+  private amoebae = new Map<string, AmoebaBoardEntry>();
+  private readonly amoebaStates = new AmoebaStateRegistry();
+  private amoebaRenderer: AmoebaBoardRenderer | null = null;
   private invertedCells = new Set<string>();
   private readonly parameciumStates = new ParameciumStateRegistry();
   private assetStatus: 'loading' | 'ready' | 'unavailable' = 'loading';
+  private amoebaAssetStatus: 'loading' | 'ready' | 'unavailable' = 'loading';
+  private amoebaAssetLoad: Promise<void> | null = null;
   private reducedMotion = false;
   private motionPreference: MediaQueryList | null = null;
   private moveCheckpointOpen = false;
@@ -92,6 +106,8 @@ export class BoardView {
 
   private setup(scene: Phaser.Scene): void {
     this.scene = scene;
+    this.labels = createCreatureLabelRenderer(scene);
+    this.amoebaRenderer = new AmoebaBoardRenderer(scene);
     const background = scene.add.graphics();
     for (let row = 0; row < BOARD_SIZE; row++) for (let col = 0; col < BOARD_SIZE; col++) {
       background.fillStyle(0xc8d9c8, 0.6).fillRoundedRect(col * CELL + 5, row * CELL + 5, CELL - 10, CELL - 10, 10);
@@ -109,10 +125,15 @@ export class BoardView {
       this.disposed = true;
       this.cancelGesture();
       scene.events.off('update', this.updateParamecia);
+      scene.events.off('update', this.updateAmoebae);
       this.motionPreference?.removeEventListener('change', this.reducedMotionChanged);
       this.motionPreference = null;
       this.parameciumStates.shutdown();
+      this.amoebaStates.shutdown();
+      this.amoebaRenderer?.destroy();
+      this.amoebaRenderer = null;
       this.paramecia.clear();
+      this.amoebae.clear();
       canvas.removeEventListener('pointerdown', this.pointerDown);
       canvas.removeEventListener('pointermove', this.pointerMove);
       canvas.removeEventListener('pointerup', this.pointerUp);
@@ -125,17 +146,62 @@ export class BoardView {
     this.reducedMotion = this.motionPreference.matches;
     this.motionPreference.addEventListener('change', this.reducedMotionChanged);
     scene.events.on('update', this.updateParamecia);
+    scene.events.on('update', this.updateAmoebae);
     canvas.setAttribute('role', 'img');
     canvas.setAttribute('aria-label', 'Eight by eight game board. Creatures are numbered zero through four. Select or drag between neighboring creatures.');
     this.render(this.board);
     void registerParameciumAssets(scene).then(loaded => {
       if (this.disposed) return;
       this.assetStatus = loaded ? 'ready' : 'unavailable';
+      this.updateBoardAccessibilityLabel();
       if (loaded) {
-        canvas.setAttribute('aria-label', 'Eight by eight game board. Level zero creatures are animated paramecia; levels one through four are numbered. Select or drag between neighboring creatures.');
         this.attachParamecia();
       }
     });
+  }
+
+  private ensureAmoebaAssets(): void {
+    if (this.amoebaAssetStatus !== 'loading' || this.amoebaAssetLoad) return;
+    this.amoebaAssetLoad = registerAmoebaAssets(this.scene).then(loaded => {
+      if (this.disposed) return;
+      this.amoebaAssetStatus = loaded ? 'ready' : 'unavailable';
+      this.amoebaAssetLoad = null;
+      this.updateBoardAccessibilityLabel();
+      if (loaded) this.attachAmoebae();
+    });
+  }
+
+  private attachAmoebae(): void {
+    this.amoebae.clear();
+    let pieceIndex = 0;
+    this.board.forEach((row, rowIndex) => row.forEach((creature, col) => {
+      if (!creature) return;
+      const piece = this.pieces[pieceIndex++];
+      if (creature.level !== 1 || !piece?.scene) return;
+      piece.removeAll(true);
+      const position = { row: rowIndex, col };
+      this.amoebae.set(creature.id, {
+        creatureId: creature.id,
+        state: this.amoebaStates.getOrCreate(creature.id),
+        piece,
+        inverted: this.invertedCells.has(this.key(position)),
+        selected: Boolean(this.selected && same(this.selected, position)),
+      });
+    }));
+    this.amoebaRenderer?.setEntries([...this.amoebae.values()]);
+  }
+
+  private updateBoardAccessibilityLabel(): void {
+    const levelZero = this.assetStatus === 'ready'
+      ? 'Level zero creatures are animated paramecia'
+      : 'Level zero creatures are numbered';
+    const levelOne = this.amoebaAssetStatus === 'ready'
+      ? 'level one creatures are animated amoebae'
+      : 'level one creatures are numbered';
+    this.game.canvas?.setAttribute(
+      'aria-label',
+      `Eight by eight game board. ${levelZero}; ${levelOne}; levels two through four are numbered. Select or drag between neighboring creatures.`,
+    );
   }
 
   private attachParamecia(): void {
@@ -162,6 +228,11 @@ export class BoardView {
     for (const paramecium of this.paramecia.values()) {
       paramecium.advance(deltaMilliseconds / 1000, this.reducedMotion);
     }
+  };
+
+  private updateAmoebae = (_time: number, deltaMilliseconds: number): void => {
+    if (this.amoebaAssetStatus !== 'ready' || this.disposed) return;
+    this.amoebaRenderer?.advance(deltaMilliseconds / 1000, this.reducedMotion);
   };
 
   private coordinates(event: PointerEvent): { x: number; y: number } | null {
@@ -283,22 +354,41 @@ export class BoardView {
   private piece(creature: Creature, position: Position, inverted = false, tracked = true): Phaser.GameObjects.Container {
     const color = inverted ? COLORS[creature.level] ^ 0xffffff : COLORS[creature.level];
     const textColor = inverted ? TEXT[creature.level] ^ 0xffffff : TEXT[creature.level];
-    const tile = this.scene.add.graphics();
-    tile.fillStyle(color).fillRoundedRect(-45, -45, 90, 90, 10);
-    if (this.selected && same(this.selected, position)) tile.lineStyle(4, 0x234f3d).strokeRoundedRect(-43, -43, 86, 86, 8);
-    const children: Phaser.GameObjects.GameObject[] = [tile];
+    const isRenderedAmoeba = creature.level === 1 && this.amoebaAssetStatus === 'ready';
+    const children: Phaser.GameObjects.GameObject[] = [];
+    if (!isRenderedAmoeba) {
+      const tile = this.scene.add.graphics();
+      tile.fillStyle(color).fillRoundedRect(-45, -45, 90, 90, 10);
+      if (this.selected && same(this.selected, position)) tile.lineStyle(4, 0x234f3d).strokeRoundedRect(-43, -43, 86, 86, 8);
+      children.push(tile);
+    }
     if (creature.level === 0 && this.assetStatus === 'ready') {
       const state = this.parameciumStates.getOrCreate(creature.id);
       const artwork = createParameciumArtwork(this.scene, state, CELL, inverted);
       children.push(artwork.container);
       this.paramecia.set(creature.id, { advance: artwork.advance });
+    } else if (creature.level === 1 && this.amoebaAssetStatus === 'ready') {
+      const state = this.amoebaStates.getOrCreate(creature.id);
+      const piece = this.scene.add.container(position.col * CELL + CELL / 2, position.row * CELL + CELL / 2, children)
+        .setDepth(this.selected && same(this.selected, position) ? 1 : 0);
+      this.amoebae.set(creature.id, {
+        creatureId: creature.id,
+        state,
+        piece,
+        inverted,
+        selected: Boolean(this.selected && same(this.selected, position)),
+      });
+      if (tracked) {
+        this.pieces.push(piece);
+        this.cells.set(this.key(position), piece);
+      }
+      return piece;
     } else {
-      const label = this.scene.add.text(0, 0, String(creature.level), {
-        fontFamily: 'Space Grotesk, sans-serif', fontSize: '38px', fontStyle: 'bold', color: `#${textColor.toString(16).padStart(6, '0')}`,
-      }).setOrigin(0.5);
+      const label = this.labels.create(String(creature.level), CELL, creatureSizeFraction(creature.level, 0), `#${textColor.toString(16).padStart(6, '0')}`);
       children.push(label);
     }
-    const container = this.scene.add.container(position.col * CELL + CELL / 2, position.row * CELL + CELL / 2, children);
+    const container = this.scene.add.container(position.col * CELL + CELL / 2, position.row * CELL + CELL / 2, children)
+      .setDepth(this.selected && same(this.selected, position) ? 1 : 0);
     if (tracked) {
       this.pieces.push(container);
       this.cells.set(this.key(position), container);
@@ -361,30 +451,38 @@ export class BoardView {
     this.board = board;
     this.invertedCells = new Set(inverted);
     if (!this.scene) return;
+    if (this.amoebaAssetStatus === 'loading' && board.some(row => row.some(creature => creature?.level === 1))) {
+      this.ensureAmoebaAssets();
+    }
     this.pieces.forEach(piece => piece.destroy());
     this.pieces = [];
     this.cells.clear();
     this.paramecia.clear();
+    this.amoebae.clear();
     board.forEach((row, rowIndex) => row.forEach((creature, col) => {
       if (creature) this.piece(creature, { row: rowIndex, col }, inverted.has(`${rowIndex},${col}`));
     }));
+    this.amoebaRenderer?.setEntries([...this.amoebae.values()]);
   }
 
   beginMove(): void {
     if (this.resetCheckpointOpen || this.moveCheckpointOpen) return;
     this.parameciumStates.beginMove();
+    this.amoebaStates.beginMove();
     this.moveCheckpointOpen = true;
   }
 
   commitMove(board: Board): void {
     if (!this.moveCheckpointOpen) return;
     this.parameciumStates.commit(board.flatMap(row => row.flatMap(creature => creature?.level === 0 ? [creature.id] : [])));
+    this.amoebaStates.commit(board.flatMap(row => row.flatMap(creature => creature?.level === 1 ? [creature.id] : [])));
     this.moveCheckpointOpen = false;
   }
 
   rollbackMove(): void {
     if (!this.moveCheckpointOpen) return;
     this.parameciumStates.rollback();
+    this.amoebaStates.rollback();
     this.moveCheckpointOpen = false;
     this.paramecia.clear();
   }
@@ -393,18 +491,21 @@ export class BoardView {
     if (this.resetCheckpointOpen) return;
     this.rollbackMove();
     this.parameciumStates.beginReset();
+    this.amoebaStates.beginReset();
     this.resetCheckpointOpen = true;
   }
 
   resetSucceeded(): void {
     if (!this.resetCheckpointOpen) return;
     this.parameciumStates.resetSucceeded();
+    this.amoebaStates.resetSucceeded();
     this.resetCheckpointOpen = false;
   }
 
   resetFailed(): void {
     if (!this.resetCheckpointOpen) return;
     this.parameciumStates.resetFailed();
+    this.amoebaStates.resetFailed();
     this.resetCheckpointOpen = false;
   }
 

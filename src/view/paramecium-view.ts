@@ -1,15 +1,15 @@
 import Phaser from 'phaser';
 import { updateParameciumMotion } from './paramecium-motion.ts';
 import type { ParameciumMotionFrame, ParameciumMotionState } from './paramecium-motion.ts';
-import { parameciumLayerCanvas, parameciumTextureKey } from './paramecium-assets.ts';
+import { parameciumLayerCanvas, parameciumNeutralBounds, parameciumTextureKey } from './paramecium-assets.ts';
+import { creatureBoxTransform, creatureSizeFraction } from './creature-sizing.ts';
 
 const SOURCE_SIZE = 896;
 const TEXTURE_SIZE = 112;
 const CILIA_FRAME_COUNT = 32;
 const EYE_SCALE = 1.5;
-const EYE_CENTER_X = 451;
-const EYE_CENTER_Y = 202;
-const ROTATION_LIMIT_RADIANS = 24 * Math.PI / 180;
+const EYE_CENTER_X = 451 + 64;
+const EYE_CENTER_Y = 202 + 64;
 const COMPOSITE_INTERVAL_SECONDS = 0.1;
 let nextCompositeTextureId = 0;
 
@@ -37,7 +37,8 @@ export function createParameciumArtwork(
   cellSize: number,
   inverted: boolean,
 ): ParameciumArtwork {
-  const scale = (cellSize - 12) / (SOURCE_SIZE * (Math.cos(ROTATION_LIMIT_RADIANS) + Math.sin(ROTATION_LIMIT_RADIANS)));
+  if (!parameciumNeutralBounds) throw new Error('Invalid or missing paramecium design metadata');
+  const { scale, offsetX, offsetY } = creatureBoxTransform(parameciumNeutralBounds, cellSize, creatureSizeFraction(0, 0));
   const artwork = scene.add.container(0, 0);
   const ciliaLayers = Array.from({ length: CILIA_FRAME_COUNT }, (_, index) =>
     parameciumLayerCanvas(scene, `cilia-${index}`, inverted));
@@ -66,12 +67,12 @@ export function createParameciumArtwork(
     scene.textures.remove(eyeTextureKey);
     throw new Error('Unable to create paramecium textures');
   }
-  const bodyImage = scene.add.image(0, 0, bodyTextureKey)
+  const bodyImage = scene.add.image(offsetX + SOURCE_SIZE / 2 * scale, offsetY + SOURCE_SIZE / 2 * scale, bodyTextureKey)
     .setOrigin(0.5)
     .setScale(scale * SOURCE_SIZE / TEXTURE_SIZE);
   const eyeContainer = scene.add.container(
-    (EYE_CENTER_X - SOURCE_SIZE / 2) * scale,
-    (EYE_CENTER_Y - SOURCE_SIZE / 2) * scale,
+    offsetX + EYE_CENTER_X * scale,
+    offsetY + EYE_CENTER_Y * scale,
   ).setName('paramecium-eye');
   const eyeImage = scene.add.image(0, 0, eyeTextureKey)
     .setOrigin(0.5)
